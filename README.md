@@ -1,2 +1,10 @@
-# hollywood
-A minimalistic type safe actor model framework built with kotlin
+# Hollywood
+
+A minimalistic type safe actor model framework built with and for kotlin
+
+**NOTE: Just a PoC at this stage**
+
+## Index
+
+- [Actors](./Actors.md)
+- [Comunication](./Comunication.md)

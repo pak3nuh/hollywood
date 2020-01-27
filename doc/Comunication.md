@@ -41,7 +41,7 @@ The main idea here is flexibility, by having a non intrusive, binary format, tha
 
 Being a [specification](https://github.com/msgpack/msgpack/blob/master/spec.md) it provides a lot of flexibility to the implementrs. There are loads of libraries that can produce **Messagepack** payloads.
 
-A native kotlin implementation of this spec is [Moshi](https://github.com/square/moshi). This is a good candidade because is kotlin only and is not optimized for **Java** users and is maintained by **Square**, a **Google** subsidiary.
+A native kotlin implementation of this spec is [Moshi](https://github.com/square/moshi). This is a good candidade because is kotlin only and is not optimized for **Java** users and is maintained by **Square**.
 
 ## Mailboxes
 

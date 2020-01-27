@@ -6,5 +6,6 @@ A minimalistic type safe actor model framework built with and for kotlin
 
 ## Index
 
-- [Actors](./Actors.md)
-- [Comunication](./Comunication.md)
+- [Actors](./doc/Actors.md)
+- [Comunication](./doc/Comunication.md)
+- [Code Generation](./doc/CodeGeneration.md)

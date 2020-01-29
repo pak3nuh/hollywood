@@ -8,7 +8,7 @@ This project leverages several technologies to provide an easier way to handle c
 
 ## Index
 
-- [Actors](./doc/Actors.md)
+- [Type safe actors](./doc/Actors.md)
 - [Communication](./doc/Communication.md)
 - [Code Generation](./doc/CodeGeneration.md)
 - [State Persistence](./doc/StatePersistence.md)

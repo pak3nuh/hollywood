@@ -12,6 +12,9 @@
   - `ActorRepository`
   - `ActorSystem`
 - Working Poc of instance creation with a DI framework
+  - Proxies talk directly with each other
+  - No need to implement scheduling yet
+  - No concurrency management
 
 ## V0.1.0
 
@@ -25,6 +28,8 @@
 
 - Implement the serialization strategies
 - Make proxy prototype that works with serialized messages
+  - This is not mailboxes
+  - Introduce a proxy exclusive endpoint where all inbound communication flows
 
 ## V0.1.2
 
@@ -34,7 +39,10 @@
 ## V0.2.0
 
 - Implement mailboxes
-- Implement dispatch and wait mechanics
+- Change communication strategy to use the mailbox instead of direct messages
+  - Only consume one message at the time (concurrency management)
+  - Adapt the communication endpoint to use the mailbox
+  - Implement a coroutine dispatcher for mailbox message scheduling
 - Make a prototype with mailbox capabilities
 
 ## V0.2.1
@@ -45,5 +53,6 @@
 ## TBD
 
 - Error handling
-- Actor address and identity
+- Actor address and identity as first class citizen
 - Factory extensions
+- Proxy lifecycle management

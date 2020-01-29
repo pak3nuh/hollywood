@@ -38,7 +38,7 @@ interface OrderManager {
 
 ## Abstract factory
 
-Every factory should inherit from a common interface, for both type safety and additional metadata:
+Every factory should inherit from a common interface, for both type safety and additional metadata like:
 
 ```kotlin
 interface ActorFactory<out T> {
@@ -46,7 +46,7 @@ interface ActorFactory<out T> {
 }
 ```
 
-This metadata can be used to _glue_ together client and generated proxy code. The lookup for a proxy can be derived from the class provided in `factoryOf` against a registry, that can also be generated and discovered via **SPI**. Alternative options include reflection or include more metadata in the `ActorFactory` like the proxy class.
+This metadata can be used to _glue_ together client and generated proxy code. The lookup for a proxy can be derived from the class provided in `factoryOf` against a registry, that can also be generated and discovered via **SPI**.
 
 Then a convenience interface can be generated, but not mandatory to use:
 ```kotlin
@@ -55,3 +55,27 @@ interface AOrderManagerFactory: ActorFactory<OrderManager> {
     override val factoryOf: KClass<T> = OrderManager::class
 }
 ```
+
+Alternative options are reflection, like classpath scanning, but this is brittle and complex, or include more metadata in the `ActorFactory` like:
+
+```kotlin
+interface ActorFactory<out T, out P: ActorProxy<T>> {
+  val factoryOf: KClass<T>
+  val proxyKClass: KClass<P>
+}
+
+interface ActorProxy<T> {
+  val delegate: T
+}
+
+@Generated
+class OrderManagerProxy(override val delegate: OrderManager): ActorProxy<OrderManager> { ... }
+
+@Generated
+interface AOrderManagerFactory: ActorFactory<OrderManager, OrderManagerProxy> {
+    override val factoryOf: KClass<OrderManager> = OrderManager::class
+    override val proxyKClass: KClass<OrderManagerProxy> = OrderManagerProxy::class
+}
+```
+
+This would provide all the needed metadata without additional overhead.

@@ -52,7 +52,7 @@ class GreeterFactoryImpl(context: ApplicationContext): GreeterFactory {
 So the wiring is likely to be manual, something like:
 ```kotlin
 interface FactoryRegistry {
-  fun <F: ActorFactory<T>, I: F> register(factoryInstance: I, factoryInterface: KClass<F>)
+  fun <T, F: ActorFactory<T>, I: F> register(factoryInstance: I, factoryInterface: KClass<F>)
 }
 fun registerMyFactory(factory: GreeterFactoryImpl) = registry.register(factory, GreeterFactory::class)
 ```
@@ -99,7 +99,7 @@ interface ActorRepository {
   fun <T> find(actorId: String, KClass<T>): T?
 }
 ```
-Instances should be optionally named to make it easy to scope state. Ex: all the actors for a specific order should contain the order id.
+Instances should be optionally identified to make it easy to scope state. Ex: all the actors for a specific order should contain the order id.
 
 The factories itself could have the capability to extend an actor, instead of just applying predefined interfaces, something like:
 ```kotlin
@@ -108,7 +108,7 @@ interface ActorRepository {
 	fun <T, F: ActorFactory<T>> extendedFactory(factoryInterface: KClass<F>)
 }
 interface FactoryExtender<out T, out F: ActorFactory<T>> {
-	fun withUknownMessageHandler(handler: UnknownMessageHandler): FactoryExtender<T, F>
+	fun withUnknownMessageHandler(handler: UnknownMessageHandler): FactoryExtender<T, F>
 	fun get(): F
 }
 ```

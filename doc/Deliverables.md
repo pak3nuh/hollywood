@@ -47,7 +47,7 @@
 
 ## V0.2.1
 
-- Change code genrator to include mailboxes
+- Change code generator to include mailboxes
 - At this point a minimalistic PoC should be working
 
 ## TBD
@@ -55,4 +55,4 @@
 - Error handling
 - Actor address and identity as first class citizen
 - Factory extensions
-- Proxy lifecycle management
+- Proxy life cycle management

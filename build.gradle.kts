@@ -1,5 +1,5 @@
 import org.gradle.plugins.ide.idea.model.IdeaLanguageLevel
-import pt.pak3nuh.hollywood.gradle.Versions
+import pt.pak3nuh.hollywood.gradle.Dependencies
 
 plugins {
     kotlin("jvm") version "1.3.61"
@@ -30,11 +30,11 @@ subprojects {
 
     dependencies {
         implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
-        implementation(kotlin("stdlib-jdk8", Versions.kotlin))
+        implementation(Dependencies.kotlinStdLib)
 
-        testImplementation("org.junit.jupiter:junit-jupiter-api:${Versions.junit}")
-        testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${Versions.junit}")
-        testImplementation("com.willowtreeapps.assertk:assertk-jvm:${Versions.assertK}")
+        testImplementation(Dependencies.junitApi)
+        testRuntimeOnly(Dependencies.junitEngine)
+        testImplementation(Dependencies.assertK)
     }
 
     tasks {

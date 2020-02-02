@@ -9,3 +9,32 @@ It is also not a requirement to design against a multi clustered implementation.
 **Disclaimer: Just a PoC at this stage**
 
 More info on the research conducted [here](./doc/research/README.md).
+
+## Usage
+
+### Build an actor system
+
+To create an actor system it is as simple as provide at least one actor factory
+
+```kotlin
+val actorSystem = SystemBuilder()
+        .registerFactory(GreeterFactory())
+        .build()
+```
+
+### Create actors
+
+Once the system is build is possible to create actor instances
+```kotlin
+val actor = actorSystem.factoryRepository.createActor(GreeterFactory::class) { factory ->
+    factory.createGreeter()
+}
+actor.sayHello()
+```
+The object `actor` is a fully working actor proxy.
+
+## Documentation index
+
+For more detailed documentation
+
+- [Processor](./doc/Processor.md)

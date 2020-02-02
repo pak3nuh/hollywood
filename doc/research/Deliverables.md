@@ -4,13 +4,13 @@
 
 - Base client **API**
 - Includes gradle multi-module project definition.
-
-## V0.0.2
-
 - Actor system interfaces
   - `FactoryRegistry`
   - `ActorRepository`
   - `ActorSystem`
+
+## V0.0.2
+
 - Working Poc of instance creation with a DI framework
   - Proxies talk directly with each other
   - No need to implement scheduling yet

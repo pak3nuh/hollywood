@@ -1,4 +1,7 @@
+import pt.pak3nuh.hollywood.gradle.Dependencies
 
 dependencies {
-    implementation(project(":api"))
+    api(project(":api"))
+    implementation(project(":core"))
+    implementation(Dependencies.kotlinReflect)
 }

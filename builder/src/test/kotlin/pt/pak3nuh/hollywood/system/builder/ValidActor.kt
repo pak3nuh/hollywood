@@ -14,9 +14,7 @@ class GreeterImpl : Greeter {
 }
 
 abstract class BaseProxy<T> : ActorProxy<T> {
-    override val proxyId: String = "some id"
-
-    override fun dispose() {}
+    override val actorId: String = "some id"
 }
 
 class GreeterProxy(override val delegate: Greeter) : BaseProxy<Greeter>(), Greeter by delegate

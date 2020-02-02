@@ -16,19 +16,14 @@ interface ActorProxy<T> {
     val delegate: T
 
     /**
-     * A unique ID for each proxy.
+     * A unique ID for each actor.
      */
-    val proxyId: String
-
-    /**
-     * Closes all associated proxy resources.
-     */
-    fun dispose()
+    val actorId: String
 }
 
 /**
  * Contains additional data for proxy behaviour.
  */
 interface ProxyConfiguration {
-    val proxyId: String
+    val actorId: String
 }

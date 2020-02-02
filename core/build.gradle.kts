@@ -1,6 +1,7 @@
-import pt.pak3nuh.hollywood.gradle.Versions
+import pt.pak3nuh.hollywood.gradle.Dependencies
 
 dependencies {
     implementation(project(":api"))
-    implementation(kotlin("reflect", Versions.kotlin))
+    implementation(Dependencies.kotlinReflect)
+    implementation(Dependencies.kotlinCoroutines)
 }

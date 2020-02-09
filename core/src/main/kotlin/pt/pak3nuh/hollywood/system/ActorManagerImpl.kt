@@ -22,6 +22,7 @@ class ActorManagerImpl(
     }
 
     override fun <T : Any, P : ActorProxy<T>, F : ActorFactory<T, P>> getOrCreateActor(actorId: String, factoryClass: KClass<out F>, creator: (F) -> T): T {
+        // todo solve same id for different actor types
         purgeReferences()
         // get reified factory
         val factory = factoryRepository[factoryClass]

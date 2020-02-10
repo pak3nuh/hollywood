@@ -1,8 +1,5 @@
 package pt.pakenuh.hollywood.sandbox.clinic
 
-class PetStatus {
-}
-
-enum class PetUpdateAction {
-    NO_ACTION, CIRGURY, MEDICINE, OBSERVATION
+enum class OwnerContactResult {
+    NO_ACTION, APPLY_TREATMENT
 }

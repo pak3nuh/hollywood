@@ -10,7 +10,7 @@ internal class SystemBuilderTest {
     @Test
     internal fun `should build system and create actor`() {
         val actorSystem = SystemBuilder()
-                .registerFactory(GreeterFactory())
+                .registerFactory(GreeterFactory::class, GreeterFactory())
                 .build()
 
         val actor = actorSystem.actorManager.createActor(GreeterFactory::class) {
@@ -25,14 +25,14 @@ internal class SystemBuilderTest {
     @Test
     internal fun `should not accept proxy that doesn't implement the actor type`() {
         assertThrows<IllegalArgumentException> {
-            SystemBuilder().registerFactory(ClockFactory())
+            SystemBuilder().registerFactory(ClockFactory::class, ClockFactory())
         }
     }
 
     @Test
     internal fun `should not accept self referenced proxy`() {
         assertThrows<IllegalArgumentException> {
-            SystemBuilder().registerFactory(PersonFactory())
+            SystemBuilder().registerFactory(PersonFactory::class, PersonFactory())
         }
     }
 }

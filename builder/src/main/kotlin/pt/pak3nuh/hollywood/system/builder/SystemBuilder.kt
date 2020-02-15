@@ -18,12 +18,12 @@ class SystemBuilder {
      * Registers a factory to be available in the actor system.
      * @throws IllegalArgumentException If the actor factory has some invalid configuration.
      */
-    fun <T : Any, P : ActorProxy<T>, F : ActorFactory<T, P>> registerFactory(instance: F): SystemBuilder {
+    fun <T : Any, P : ActorProxy<T>, F : ActorFactory<T, P>> registerFactory(kClass: KClass<F>, instance: F): SystemBuilder {
         // Cannot add P : T because Java forbids it and Kotlin abides
         // https://stackoverflow.com/questions/43790137/why-cant-type-parameter-in-kotlin-have-any-other-bounds-if-its-bounded-by-anot
         require(!instance.actorKClass.isSubclassOf(ActorProxy::class)) { "Actor type can't be a proxy" }
         require(instance.proxyKClass.isSubclassOf(instance.actorKClass)) { "Proxy must be a subclass of the actor" }
-        factoryMap[instance::class] = instance
+        factoryMap[kClass] = instance
         return this
     }
 

@@ -12,10 +12,10 @@ fun createClinic(): PetClinic {
     val actors
 
     val actorSystem = SystemBuilder()
-            .registerFactory(ClinicFactory())
-            .registerFactory(OwnerFactory())
-            .registerFactory(PetFactory())
-            .registerFactory(VetFactory())
+            .registerFactory(ClinicFactory::class, ClinicFactory())
+            .registerFactory(OwnerFactory::class, OwnerFactory())
+            .registerFactory(PetFactory::class, PetFactory())
+            .registerFactory(VetFactory::class, VetFactory())
             .build()
 
     return PetClinicImpl(actorSystem)

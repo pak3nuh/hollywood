@@ -9,8 +9,8 @@ interface Greeter {
     fun sayHello(): String
 }
 
-class GreeterImpl : Greeter {
-    override fun sayHello() = "Hello World!"
+class GreeterImpl(private val greet: String) : Greeter {
+    override fun sayHello() = greet
 }
 
 abstract class BaseProxy<T> : ActorProxy<T> {
@@ -19,9 +19,9 @@ abstract class BaseProxy<T> : ActorProxy<T> {
 
 class GreeterProxy(override val delegate: Greeter) : BaseProxy<Greeter>(), Greeter by delegate
 
-class GreeterFactory : ActorFactory<Greeter, GreeterProxy> {
+class GreeterFactory(private val greet: String? = null) : ActorFactory<Greeter, GreeterProxy> {
     override fun createProxy(delegate: Greeter, config: ProxyConfiguration): GreeterProxy = GreeterProxy(delegate)
     override val actorKClass: KClass<Greeter> = Greeter::class
     override val proxyKClass: KClass<GreeterProxy> = GreeterProxy::class
-    fun createActor() = GreeterImpl()
+    fun createActor() = GreeterImpl(greet ?: "Hello World!")
 }

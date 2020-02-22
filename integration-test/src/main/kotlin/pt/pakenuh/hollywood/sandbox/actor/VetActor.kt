@@ -1,14 +1,15 @@
 package pt.pakenuh.hollywood.sandbox.actor
 
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.isActive
 import pt.pak3nuh.hollywood.actor.proxy.ActorProxy
 import pt.pak3nuh.hollywood.processor.Actor
+import pt.pakenuh.hollywood.sandbox.Loggers
 import pt.pakenuh.hollywood.sandbox.clinic.Exam
 import pt.pakenuh.hollywood.sandbox.clinic.OwnerContactResult
 import pt.pakenuh.hollywood.sandbox.pet.Pet
 import pt.pakenuh.hollywood.sandbox.vet.Vet
-import java.util.LinkedList
-import java.util.Queue
+import kotlin.coroutines.coroutineContext
 
 @Actor
 interface VetActor {
@@ -16,44 +17,46 @@ interface VetActor {
     /**
      * Starts the actor on an endless loop
      */
-    suspend fun startWork(maxSlots: Int): Nothing
+    suspend fun startWork()
 }
 
 class VetProxy(override val delegate: VetActor, override val actorId: String) : ActorProxy<VetActor>, VetActor by delegate
 
-class VetFactory(private val actors: ClinicActors) : FactoryBase<VetActor, VetProxy>(VetActor::class, VetProxy::class, ::VetProxy) {
-    fun createVet(vet: Vet): VetActor = VetActorImpl(vet, actors)
+class VetFactory(private val actors: ClinicActors, private val maxSlots: Int) : FactoryBase<VetActor, VetProxy>(VetActor::class, VetProxy::class, ::VetProxy) {
+    fun createVet(vet: Vet): VetActor = VetActorImpl(vet, actors, maxSlots)
 }
 
-private class VetActorImpl(private val vet: Vet, private val actors: ClinicActors) : VetActor {
+private class VetActorImpl(vet: Vet, private val actors: ClinicActors, private val maxSlots: Int) : VetActor {
 
-    private val slots: Queue<Pet> = LinkedList()
-    private var maxSlots = 0
+    private val slots: Channel<Pet> = Channel(maxSlots)
+    private var currSlots = 0
+    private val logger = Loggers.getLogger<VetActorImpl>()
 
     override suspend fun trySchedule(pet: Pet): Boolean {
-        return if (slots.size == MAX_SCHEDULE) {
+        logger.info("Scheduling pet ${pet.petId.name}")
+        return if (currSlots == maxSlots) {
+            logger.fine("Can't schedule more pets")
             false
         } else {
+            logger.fine("Pet scheduled")
+            currSlots++
             slots.offer(pet)
         }
     }
 
-    override suspend fun startWork(maxSlots: Int): Nothing {
-        this.maxSlots = maxSlots
-        while (true) {
-            val pet: Pet? = slots.poll()
-            if (pet == null) {
-                delay(DELAY_TIME_MS)
-            } else {
-                checkPet(pet)
-            }
+    override suspend fun startWork() {
+        while (coroutineContext.isActive) {
+            val pet: Pet = slots.receive()
+            checkPet(pet)
         }
     }
 
     private suspend fun checkPet(pet: Pet) {
+        logger.info("Start checking pet ${pet.petId.name}")
         val clinic = actors.getClinic()
         if (!isHealthy(pet)) {
             // for simplicity only the first result is obtained
+            logger.fine("Pet unhealthy, starting analysis")
             val (exam, treatment) = when {
                 pet.brokenBones -> clinic.orderExam(pet, Exam.X_RAY) to Treatment.APPLY_CAST
                 pet.getsTiredFast -> clinic.orderExam(pet, Exam.SOUND_SCAN) to Treatment.HEART_CIRGURY
@@ -76,10 +79,5 @@ private class VetActorImpl(private val vet: Vet, private val actors: ClinicActor
 
     private fun isHealthy(pet: Pet): Boolean {
         return !pet.peesBlood && !pet.brokenBones && !pet.getsTiredFast && !pet.hasFainted && !pet.hasSkinRash
-    }
-
-    private companion object {
-        private const val MAX_SCHEDULE = 5
-        private const val DELAY_TIME_MS = 1_000L
     }
 }

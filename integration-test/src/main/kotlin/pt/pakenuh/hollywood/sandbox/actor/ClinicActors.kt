@@ -12,14 +12,19 @@ class ClinicActors(private val actorManager: ActorManager) {
     }
 
     fun getVet(vet: Vet): VetActor {
-        return actorManager.getOrCreateActor(vet.name, VetFactory::class) { it.createVet(vet) }
+        return actorManager.getOrCreateActor("VET-vet.name", VetFactory::class) { it.createVet(vet) }
     }
 
-    fun getOwner(ownerId: OwnerId): OwnerActor {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    suspend fun getOwner(ownerId: OwnerId): OwnerActor {
+        val ownerContacts = getClinic().getOwnerContact(ownerId)
+        return actorManager.getOrCreateActor("OWNER-${ownerId.id}", OwnerFactory::class) {
+            it.createOwner(ownerContacts)
+        }
     }
 
     fun getPet(pet: Pet): PetActor {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return actorManager.getOrCreateActor("PET-${pet.petId.registryId}", PetFactory::class) {
+            it.createPet(pet)
+        }
     }
 }

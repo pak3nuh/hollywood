@@ -45,10 +45,13 @@ private class VetActorImpl(vet: Vet, private val actors: ClinicActors, private v
     }
 
     override suspend fun startWork() {
+        logger.info("Starting vet loop")
         while (coroutineContext.isActive) {
+            logger.fine("Getting pet from inbox")
             val pet: Pet = slots.receive()
             checkPet(pet)
         }
+        logger.info("Exiting vet loop")
     }
 
     private suspend fun checkPet(pet: Pet) {
@@ -65,16 +68,18 @@ private class VetActorImpl(vet: Vet, private val actors: ClinicActors, private v
                 pet.peesBlood -> clinic.orderExam(pet, Exam.KIDNEY_EXAM) to Treatment.KIDNEY_TRANSPLANT
                 else -> error("shouldn't be here")
             }
+            logger.fine("Analysis result $exam contacting owner")
             val owner = actors.getOwner(pet.petId.ownerId)
             when (owner.contact(exam, treatment)) {
                 OwnerContactResult.APPLY_TREATMENT -> {
+                    logger.fine("Applying treatment")
                     actors.getPet(pet).applyTreatment(treatment)
                 }
                 OwnerContactResult.NO_ACTION -> {
+                    logger.fine("No treatment applied")
                 }
             }
         }
-        clinic.petReady(pet)
     }
 
     private fun isHealthy(pet: Pet): Boolean {

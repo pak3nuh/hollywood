@@ -4,8 +4,7 @@ import pt.pak3nuh.hollywood.actor.proxy.ActorProxy
 import pt.pak3nuh.hollywood.processor.Actor
 import pt.pakenuh.hollywood.sandbox.clinic.ExamResult
 import pt.pakenuh.hollywood.sandbox.clinic.OwnerContactResult
-
-typealias OwnerContactFunction = suspend (result: ExamResult, treatment: Treatment) -> OwnerContactResult
+import pt.pakenuh.hollywood.sandbox.owner.OwnerId
 
 @Actor
 interface OwnerActor {
@@ -15,8 +14,8 @@ interface OwnerActor {
 
 class OwnerProxy(override val delegate: OwnerActor, override val actorId: String) : ActorProxy<OwnerActor>, OwnerActor by delegate
 
-class OwnerFactory : FactoryBase<OwnerActor, OwnerProxy>(OwnerActor::class, OwnerProxy::class, ::OwnerProxy) {
-    fun createOwner(ownerContacts: OwnerContacts): OwnerActor = OwnerActorImpl(ownerContacts)
+class OwnerFactory(private val clinicActors: ClinicActors) : FactoryBase<OwnerActor, OwnerProxy>(OwnerActor::class, OwnerProxy::class, ::OwnerProxy) {
+    fun createOwner(ownerId: OwnerId): OwnerActor = OwnerActorImpl(clinicActors, ownerId)
 }
 
 data class OwnerContacts(
@@ -24,14 +23,24 @@ data class OwnerContacts(
         val readyContact: suspend () -> Unit
 )
 
-private class OwnerActorImpl(private val ownerContacts: OwnerContacts) : OwnerActor {
+private class OwnerActorImpl(clinicActors: ClinicActors, private val ownerId: OwnerId) : OwnerActor {
+
+    private val clinicActor = clinicActors.getClinic()
+    private var contacts: OwnerContacts? = null
 
     override suspend fun contact(result: ExamResult, treatment: Treatment): OwnerContactResult {
-        return ownerContacts.updateContact(result, treatment)
+        return getOwnerContacts().updateContact(result, treatment)
     }
 
     override suspend fun petReady() {
-        ownerContacts.readyContact()
+        getOwnerContacts().readyContact()
+    }
+
+    private suspend fun getOwnerContacts(): OwnerContacts {
+        if (contacts == null) {
+            contacts = clinicActor.getLatestOwnerContacts(ownerId)
+        }
+        return contacts!!
     }
 
 }

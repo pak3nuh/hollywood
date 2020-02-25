@@ -1,10 +1,7 @@
 package pt.pak3nuh.hollywood.system
 
 import assertk.assertThat
-import assertk.assertions.isEqualTo
-import assertk.assertions.isNotSameAs
-import assertk.assertions.isNull
-import assertk.assertions.isSameAs
+import assertk.assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import java.util.concurrent.CompletableFuture
@@ -40,9 +37,11 @@ internal class ActorManagerImplTest {
     internal fun `should dispose actor`() {
         val actor1 = manager.getOrCreateActor("id", GreeterFactory::class) { it.createGreeter() }
 
+        assertThat(manager.getActor("id", Greeter::class)).isNotNull()
+
         manager.disposeActor(actor1)
 
-        assertThat(manager.getActor("id")).isNull()
+        assertThat(manager.getActor("id", Greeter::class)).isNull()
     }
 
     @Test

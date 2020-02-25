@@ -19,18 +19,20 @@ import kotlin.coroutines.CoroutineContext
 class PetClinicImpl(actorSystem: ActorSystem, vets: List<Vet>) : PetClinic, CoroutineScope {
 
     private val job: CompletableJob = Job()
-    private val petClinicActor = actorSystem.getPetClinic()
     override val coroutineContext: CoroutineContext = job
+    private val petClinicActor = actorSystem.getPetClinic()
     private val logger = Loggers.getLogger<PetClinicImpl>()
 
     init {
-        vets.forEach { vet ->
-            val actor = actorSystem.actorManager.getOrCreateActor(vet.name, VetFactory::class) {
+        vets.asSequence().map { vet ->
+            actorSystem.actorManager.getOrCreateActor(vet.name, VetFactory::class) {
+                logger.info("Creating vet ${vet.name}")
                 it.createVet(vet)
             }
-            launch(Dispatchers.Default) {
-                logger.info("Starting vet ${vet.name}")
-                actor.startWork()
+        }.forEach {
+            launch {
+                logger.fine("Starting vet actor")
+                it.startWork()
             }
         }
     }

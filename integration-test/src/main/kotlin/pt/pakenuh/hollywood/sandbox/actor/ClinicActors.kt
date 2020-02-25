@@ -12,18 +12,17 @@ class ClinicActors(private val actorManager: ActorManager) {
     }
 
     fun getVet(vet: Vet): VetActor {
-        return actorManager.getOrCreateActor("VET-vet.name", VetFactory::class) { it.createVet(vet) }
+        return actorManager.getOrCreateActor(vet.name, VetFactory::class) { it.createVet(vet) }
     }
 
-    suspend fun getOwner(ownerId: OwnerId): OwnerActor {
-        val ownerContacts = getClinic().getOwnerContact(ownerId)
-        return actorManager.getOrCreateActor("OWNER-${ownerId.id}", OwnerFactory::class) {
-            it.createOwner(ownerContacts)
+    fun getOwner(ownerId: OwnerId): OwnerActor {
+        return actorManager.getOrCreateActor(ownerId.id, OwnerFactory::class) {
+            it.createOwner(ownerId)
         }
     }
 
     fun getPet(pet: Pet): PetActor {
-        return actorManager.getOrCreateActor("PET-${pet.petId.registryId}", PetFactory::class) {
+        return actorManager.getOrCreateActor(pet.petId.registryId, PetFactory::class) {
             it.createPet(pet)
         }
     }

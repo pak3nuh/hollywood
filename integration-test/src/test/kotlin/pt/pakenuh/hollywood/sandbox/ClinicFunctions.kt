@@ -25,8 +25,8 @@ fun createClinic(): PetClinic {
             .registerFactory(ClinicFactory::class) { _, props ->
                 ClinicFactory(vets, props[ClinicActorsProperty])
             }
-            .registerFactory(OwnerFactory::class) { _, _ ->
-                OwnerFactory()
+            .registerFactory(OwnerFactory::class) { _, props ->
+                OwnerFactory(props[ClinicActorsProperty])
             }
             .registerFactory(PetFactory::class) { _, props ->
                 PetFactory(props[ClinicActorsProperty])

@@ -5,6 +5,7 @@ import kotlinx.coroutines.Job
 import pt.pak3nuh.hollywood.actor.proxy.ActorProxy
 import pt.pak3nuh.hollywood.processor.Actor
 import pt.pak3nuh.hollywood.system.ActorSystem
+import pt.pakenuh.hollywood.sandbox.Loggers
 import pt.pakenuh.hollywood.sandbox.PetClinicException
 import pt.pakenuh.hollywood.sandbox.clinic.Exam
 import pt.pakenuh.hollywood.sandbox.clinic.ExamResult
@@ -26,7 +27,8 @@ interface ClinicActor {
     suspend fun getPetToSee(petId: PetId): Pet
     suspend fun getPets(): List<PetId>
     suspend fun waitClosing()
-    suspend fun getOwnerContact(ownerId: OwnerId): OwnerContacts
+    suspend fun getOwnerContact(petId: PetId): OwnerContacts
+    suspend fun getLatestOwnerContacts(ownerId: OwnerId): OwnerContacts
 
     companion object {
         const val CLINIC_ID = "clinic unique id"
@@ -44,39 +46,42 @@ internal class ClinicActorImpl(private val vets: List<Vet>, private val actors: 
 
     private val pets = mutableMapOf<String, PetInObservation>()
     private val job: CompletableJob = Job()
+    private val logger = Loggers.getLogger<ClinicActorImpl>()
 
     override suspend fun checkinPet(pet: Pet, contacts: OwnerContacts) {
-        vets.forEach {
-            if (actors.getVet(it).trySchedule(pet)) {
-                pets[pet.petId.registryId] = PetInObservation(pet, contacts)
-                return
-            }
-        }
-        throw PetClinicException("No vets available")
+        val firstAvailableVet = vets.firstOrNull {
+            actors.getVet(it).trySchedule(pet)
+        } ?: throw PetClinicException("No vets available")
+
+        pets[pet.petId.registryId] = PetInObservation(pet, contacts, firstAvailableVet)
+        return
     }
 
     override suspend fun petReady(pet: Pet) {
         val owner = actors.getOwner(pet.petId.ownerId)
-        pets.getValue(pet.petId.registryId).state = PetInObservation.State.READY
+        requirePet(pet.petId).state = PetInObservation.State.READY
         owner.petReady()
     }
 
     override suspend fun orderExam(pet: Pet, exam: Exam): ExamResult {
-        pets.getValue(pet.petId.registryId).exams.add(exam)
+        requirePet(pet.petId).exams.add(exam)
         Randoms.delay(1_000)
         return if (Randoms.bool()) OkResult else NokResult
     }
 
     override suspend fun checkoutPet(petId: PetId, creditCard: CreditCard): Receipt {
+        logger.info("Checking out pet")
         val petInObservation = requirePet(petId)
         if (petInObservation.state != PetInObservation.State.READY) {
             throw PetClinicException("Pet not ready")
         }
+        logger.fine("Issuing receipt")
         val receipt = issueReceipt(creditCard, petInObservation)
         pets.remove(petId.registryId)
         if (pets.isEmpty()) {
             job.complete()
         }
+        logger.fine("Pet checked out")
         return receipt
     }
 
@@ -104,10 +109,14 @@ internal class ClinicActorImpl(private val vets: List<Vet>, private val actors: 
         job.join()
     }
 
-    override suspend fun getOwnerContact(ownerId: OwnerId): OwnerContacts {
+    override suspend fun getOwnerContact(petId: PetId): OwnerContacts {
+        return requirePet(petId).contacts
+    }
+
+    override suspend fun getLatestOwnerContacts(ownerId: OwnerId): OwnerContacts {
         return pets.asSequence()
                 .filter { it.value.pet.petId.ownerId == ownerId }
-                .map { it.value.contact }
+                .map { it.value.contacts }
                 .first()
     }
 
@@ -117,7 +126,8 @@ internal class ClinicActorImpl(private val vets: List<Vet>, private val actors: 
 
 private data class PetInObservation(
         val pet: Pet,
-        val contact: OwnerContacts,
+        val contacts: OwnerContacts,
+        val vet: Vet,
         var state: State = State.WAITING_VET,
         val exams: MutableList<Exam> = ArrayList(),
         val treatments: MutableList<Treatment> = ArrayList()

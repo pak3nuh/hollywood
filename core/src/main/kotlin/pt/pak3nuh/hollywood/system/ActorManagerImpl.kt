@@ -5,7 +5,7 @@ import pt.pak3nuh.hollywood.actor.proxy.ActorProxy
 import pt.pak3nuh.hollywood.actor.proxy.ProxyConfiguration
 import java.lang.ref.ReferenceQueue
 import java.lang.ref.WeakReference
-import java.util.*
+import java.util.UUID
 import java.util.concurrent.ConcurrentSkipListMap
 import kotlin.reflect.KClass
 import kotlin.reflect.full.cast
@@ -15,7 +15,7 @@ class ActorManagerImpl(
 ) : ActorManager {
 
     private val referenceQueue = ReferenceQueue<ActorProxy<*>>()
-    // not using the InternalActorId because inline classes are wrapped on generics
+    // not using the InternalActorId because inline classes are boxed on generics
     private val managedActors = ConcurrentSkipListMap<String, AtomicHolder>()
 
     override fun <T : Any, P : ActorProxy<T>, F : ActorFactory<T, P>> createActor(factoryClass: KClass<out F>, creator: (F) -> T): T {
@@ -55,9 +55,11 @@ class ActorManagerImpl(
     }
 
 
-    internal fun getActor(actorId: String, actorKClass: KClass<*>): ActorProxy<*>? {
+    internal fun <T : Any> getActor(actorId: String, actorKClass: KClass<T>): T? {
         val internalActorId = InternalActorId.fromExternal(actorId, actorKClass)
-        return managedActors[internalActorId.fullActorId]?.reference?.get()
+        val actorProxy = managedActors[internalActorId.fullActorId]?.reference?.get()
+        // no need to check for instance type because the class name was encoded in the key
+        return actorProxy?.let { actorKClass.cast(it) }
     }
 
     /**

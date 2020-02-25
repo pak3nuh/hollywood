@@ -31,7 +31,7 @@ class PetClinicDayTest {
                 brokenBones = true
         )
         val johnCreditCard = CreditCard("1", 5000)
-        petClinic.checkinPet(mrBoots, OwnerContacts({ examResult, treatment ->
+        petClinic.checkinPet(mrBoots, OwnerContacts({ _, _ ->
             OwnerContactResult.APPLY_TREATMENT
         }, {
             petClinic.checkoutPet(mrBoots.petId, johnCreditCard)

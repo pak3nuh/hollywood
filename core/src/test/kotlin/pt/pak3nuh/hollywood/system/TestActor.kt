@@ -30,3 +30,21 @@ class GreeterFactory : ActorFactory<Greeter, GreeterProxy> {
         return GreeterActor()
     }
 }
+
+
+interface Dog {
+    suspend fun bark(): String
+}
+
+class DogActor : Dog {
+    override suspend fun bark(): String = "Whoof"
+}
+
+class DogProxy(override val delegate: Dog, override val actorId: String) : ActorProxy<Dog>, Dog by delegate
+
+class DogFactory : ActorFactory<Dog, DogProxy> {
+    override fun createProxy(delegate: Dog, config: ProxyConfiguration): DogProxy = DogProxy(delegate, config.actorId)
+    fun createDog(): Dog = DogActor()
+    override val actorKClass: KClass<Dog> = Dog::class
+    override val proxyKClass: KClass<DogProxy> = DogProxy::class
+}

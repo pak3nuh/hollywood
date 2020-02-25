@@ -8,7 +8,6 @@ import pt.pakenuh.hollywood.sandbox.Loggers
 import pt.pakenuh.hollywood.sandbox.clinic.Exam
 import pt.pakenuh.hollywood.sandbox.clinic.OwnerContactResult
 import pt.pakenuh.hollywood.sandbox.pet.Pet
-import pt.pakenuh.hollywood.sandbox.vet.Vet
 import kotlin.coroutines.coroutineContext
 
 @Actor
@@ -23,10 +22,10 @@ interface VetActor {
 class VetProxy(override val delegate: VetActor, override val actorId: String) : ActorProxy<VetActor>, VetActor by delegate
 
 class VetFactory(private val actors: ClinicActors, private val maxSlots: Int) : FactoryBase<VetActor, VetProxy>(VetActor::class, VetProxy::class, ::VetProxy) {
-    fun createVet(vet: Vet): VetActor = VetActorImpl(vet, actors, maxSlots)
+    fun createVet(): VetActor = VetActorImpl(actors, maxSlots)
 }
 
-private class VetActorImpl(vet: Vet, private val actors: ClinicActors, private val maxSlots: Int) : VetActor {
+private class VetActorImpl(private val actors: ClinicActors, private val maxSlots: Int) : VetActor {
 
     private val slots: Channel<Pet> = Channel(maxSlots)
     private var currSlots = 0

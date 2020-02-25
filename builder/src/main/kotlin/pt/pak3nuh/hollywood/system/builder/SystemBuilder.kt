@@ -94,6 +94,7 @@ class SystemBuilder {
         /**
          * Gets property previously set.
          * @throws IllegalStateException If a property is accessed after the system was built.
+         * @throws NoSuchElementException If a property doesn't exist.
          */
         operator fun <T : Any> get(property: Property<T>): T
     }

@@ -2,7 +2,6 @@ package pt.pakenuh.hollywood.sandbox.clinic
 
 import kotlinx.coroutines.CompletableJob
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import pt.pak3nuh.hollywood.system.ActorSystem
@@ -27,7 +26,7 @@ class PetClinicImpl(actorSystem: ActorSystem, vets: List<Vet>) : PetClinic, Coro
         vets.asSequence().map { vet ->
             actorSystem.actorManager.getOrCreateActor(vet.name, VetFactory::class) {
                 logger.info("Creating vet ${vet.name}")
-                it.createVet(vet)
+                it.createVet()
             }
         }.forEach {
             launch {

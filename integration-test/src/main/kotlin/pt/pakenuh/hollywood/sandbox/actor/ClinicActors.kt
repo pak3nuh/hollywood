@@ -12,7 +12,7 @@ class ClinicActors(private val actorManager: ActorManager) {
     }
 
     fun getVet(vet: Vet): VetActor {
-        return actorManager.getOrCreateActor(vet.name, VetFactory::class) { it.createVet(vet) }
+        return actorManager.getOrCreateActor(vet.name, VetFactory::class) { it.createVet() }
     }
 
     fun getOwner(ownerId: OwnerId): OwnerActor {

@@ -15,6 +15,7 @@ class ActorManagerImpl(
 ) : ActorManager {
 
     private val referenceQueue = ReferenceQueue<ActorProxy<*>>()
+    // not using the InternalActorId because inline classes are boxed on generics
     private val managedActors = ConcurrentSkipListMap<String, AtomicHolder>()
 
     override fun <T : Any, P : ActorProxy<T>, F : ActorFactory<T, P>> createActor(factoryClass: KClass<out F>, creator: (F) -> T): T {
@@ -25,7 +26,8 @@ class ActorManagerImpl(
         purgeReferences()
         // get reified factory
         val factory = factoryRepository[factoryClass]
-        val holder: AtomicHolder = managedActors.computeIfAbsent(actorId) {
+        val internalActorId = InternalActorId.fromExternal(actorId, factory.actorKClass)
+        val holder: AtomicHolder = managedActors.computeIfAbsent(internalActorId.fullActorId) {
             AtomicHolder(referenceQueue) {
                 // creates actor
                 val actorInstance = creator(factory)
@@ -34,7 +36,7 @@ class ActorManagerImpl(
                 }
                 check(!factory.proxyKClass.isInstance(actorInstance)) { "Actor created can't be a proxy" }
                 // creates proxy
-                val proxy = factory.createProxy(actorInstance, Configuration(actorId))
+                val proxy = factory.createProxy(actorInstance, Configuration(internalActorId))
                 check(actorInstance::class != proxy::class) { "Actor and proxy have the same type" }
                 proxy
             }
@@ -52,8 +54,12 @@ class ActorManagerImpl(
         }
     }
 
-    internal fun getActor(actorId: String): ActorProxy<*>? {
-        return managedActors[actorId]?.reference?.get()
+
+    internal fun <T : Any> getActor(actorId: String, actorKClass: KClass<T>): T? {
+        val internalActorId = InternalActorId.fromExternal(actorId, actorKClass)
+        val actorProxy = managedActors[internalActorId.fullActorId]?.reference?.get()
+        // no need to check for instance type because the class name was encoded in the key
+        return actorProxy?.let { actorKClass.cast(it) }
     }
 
     /**
@@ -91,5 +97,20 @@ class ActorManagerImpl(
         val actorId = referent.actorId
     }
 
-    private class Configuration(override val actorId: String) : ProxyConfiguration
+    private class Configuration(private val internalActorId: InternalActorId) : ProxyConfiguration {
+        override val actorId: String
+            get() = internalActorId.fullActorId
+    }
+
+}
+
+private inline class InternalActorId(val fullActorId: String) {
+    companion object {
+        /**
+         * For uniqueness, external actor ids must be concatenated with their actor interface
+         */
+        fun fromExternal(actorId: String, actorKClass: KClass<*>): InternalActorId {
+            return InternalActorId("${actorKClass.qualifiedName}:$actorId")
+        }
+    }
 }

@@ -11,7 +11,7 @@
 
 ## V0.0.2
 
-- Working Poc of instance creation with a DI framework
+- Working Poc of instance creation with DI in place
   - Proxies talk directly with each other
   - No need to implement scheduling yet
   - No concurrency management

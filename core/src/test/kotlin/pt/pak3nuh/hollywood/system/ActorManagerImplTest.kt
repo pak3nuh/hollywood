@@ -2,6 +2,7 @@ package pt.pak3nuh.hollywood.system
 
 import assertk.assertThat
 import assertk.assertions.isEqualTo
+import assertk.assertions.isNotNull
 import assertk.assertions.isNotSameAs
 import assertk.assertions.isNull
 import assertk.assertions.isSameAs
@@ -12,8 +13,9 @@ import kotlin.concurrent.thread
 
 internal class ActorManagerImplTest {
 
-    private val factory = GreeterFactory()
-    private val repo = singletonRepository(factory)
+    private val greeterFactory = GreeterFactory()
+    private val dogFactory = DogFactory()
+    private val repo = simpleRepository(greeterFactory, dogFactory)
     private val manager = ActorManagerImpl(repo)
 
     @Test
@@ -22,8 +24,8 @@ internal class ActorManagerImplTest {
         val actor2 = manager.createActor(GreeterFactory::class) { it.createGreeter() }
 
         assertThat(actor1).isNotSameAs(actor2)
-        assertThat(factory.createdProxies).isEqualTo(2)
-        assertThat(factory.createdActors).isEqualTo(2)
+        assertThat(greeterFactory.createdProxies).isEqualTo(2)
+        assertThat(greeterFactory.createdActors).isEqualTo(2)
     }
 
     @Test
@@ -32,17 +34,36 @@ internal class ActorManagerImplTest {
         val actor2 = manager.getOrCreateActor("id", GreeterFactory::class) { it.createGreeter() }
 
         assertThat(actor1).isSameAs(actor2)
-        assertThat(factory.createdProxies).isEqualTo(1)
-        assertThat(factory.createdActors).isEqualTo(1)
+        assertThat(greeterFactory.createdProxies).isEqualTo(1)
+        assertThat(greeterFactory.createdActors).isEqualTo(1)
     }
 
     @Test
     internal fun `should dispose actor`() {
         val actor1 = manager.getOrCreateActor("id", GreeterFactory::class) { it.createGreeter() }
 
+        assertThat(manager.getActor("id", Greeter::class)).isNotNull()
+
         manager.disposeActor(actor1)
 
-        assertThat(manager.getActor("id")).isNull()
+        assertThat(manager.getActor("id", Greeter::class)).isNull()
+    }
+
+    @Test
+    internal fun `should allow same id for different actor type`() {
+        val id = "some id"
+        val greeter = manager.getOrCreateActor(id, GreeterFactory::class) { it.createGreeter() }
+        val dog = manager.getOrCreateActor(id, DogFactory::class) { it.createDog() }
+
+        assertThat(manager.getActor(id, Greeter::class)).isSameAs(greeter)
+        assertThat(manager.getActor(id, Dog::class)).isSameAs(dog)
+    }
+
+    @Test
+    internal fun `should return null if the actor type is not correct`() {
+        val id = "some id"
+        manager.getOrCreateActor(id, DogFactory::class) { it.createDog() }
+        assertThat(manager.getActor(id, Greeter::class)).isNull()
     }
 
     @Test
@@ -58,7 +79,7 @@ internal class ActorManagerImplTest {
         val actor2 = future1.join()
 
         assertThat(actor1).isSameAs(actor2)
-        assertThat(factory.createdActors).isEqualTo(1)
+        assertThat(greeterFactory.createdActors).isEqualTo(1)
     }
 
     private fun createActorInAnotherThread(future: CompletableFuture<Greeter>) {

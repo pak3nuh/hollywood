@@ -1,17 +1,14 @@
 package pt.pak3nuh.hollywood.processor.generator
 
+import pt.pak3nuh.hollywood.processor.Actor
 import pt.pak3nuh.hollywood.processor.generator.context.GenerationContext
 import pt.pak3nuh.hollywood.processor.generator.context.Logger
 import java.nio.file.Paths
 import javax.annotation.processing.AbstractProcessor
 import javax.annotation.processing.RoundEnvironment
-import javax.annotation.processing.SupportedAnnotationTypes
-import javax.annotation.processing.SupportedSourceVersion
 import javax.lang.model.SourceVersion
 import javax.lang.model.element.TypeElement
 
-@SupportedSourceVersion(SourceVersion.RELEASE_6)
-@SupportedAnnotationTypes("pt.pak3nuh.hollywood.processor.Actor")
 class GeneratorFacade : AbstractProcessor() {
     override fun process(annotations: Set<TypeElement>, roundEnv: RoundEnvironment): Boolean {
         if (annotations.isEmpty()) {
@@ -22,7 +19,7 @@ class GeneratorFacade : AbstractProcessor() {
         val actorAnnotation: TypeElement = annotations.first()
 
         val destinationFolder: String = processingEnv.options["kapt.kotlin.generated"]
-                ?: throw IllegalStateException("Generated source folder is mandatory")
+                ?: error("Generated source folder is mandatory")
 
         val logger = Logger(processingEnv.messager)
         val ctx = GenerationContext(logger)
@@ -43,4 +40,7 @@ class GeneratorFacade : AbstractProcessor() {
         return true
     }
 
+    override fun getSupportedSourceVersion(): SourceVersion = SourceVersion.RELEASE_6
+
+    override fun getSupportedAnnotationTypes(): MutableSet<String> = mutableSetOf(Actor::class.qualifiedName!!)
 }

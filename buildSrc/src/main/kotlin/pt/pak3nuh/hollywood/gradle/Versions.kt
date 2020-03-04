@@ -9,6 +9,7 @@ object Versions {
 }
 
 object Dependencies {
+    val kotlinPoet = "com.squareup:kotlinpoet:1.5.0"
     val kotlinCoroutines = kotlinx("kotlinx-coroutines-core", Versions.coroutines)
     val kotlinReflect = kotlin("reflect", Versions.kotlin)
     val kotlinStdLib = kotlin("stdlib-jdk8", Versions.kotlin)

@@ -2,7 +2,7 @@ package pt.pak3nuh.hollywood.gradle
 
 object Versions {
     // plugin versions must be changed inline
-    val kotlin = "1.3.61"
+    val kotlin = "1.3.70"
     val junit = "5.6.0"
     val assertK = "0.20"
     val coroutines = "1.3.3"

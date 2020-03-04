@@ -1,6 +1,5 @@
 package pt.pakenuh.hollywood.sandbox.actor
 
-import pt.pak3nuh.hollywood.actor.proxy.ActorProxy
 import pt.pak3nuh.hollywood.processor.Actor
 import pt.pakenuh.hollywood.sandbox.clinic.ExamResult
 import pt.pakenuh.hollywood.sandbox.clinic.OwnerContactResult
@@ -12,9 +11,7 @@ interface OwnerActor {
     suspend fun petReady()
 }
 
-class OwnerProxy(override val delegate: OwnerActor, override val actorId: String) : ActorProxy<OwnerActor>, OwnerActor by delegate
-
-class OwnerFactory(private val clinicActors: ClinicActors) : FactoryBase<OwnerActor, OwnerProxy>(OwnerActor::class, OwnerProxy::class, ::OwnerProxy) {
+class OwnerFactory(private val clinicActors: ClinicActors) : FactoryBase<OwnerActor, OwnerActorProxy>(OwnerActor::class, OwnerActorProxy::class, ::OwnerActorProxy) {
     fun createOwner(ownerId: OwnerId): OwnerActor = OwnerActorImpl(clinicActors, ownerId)
 }
 

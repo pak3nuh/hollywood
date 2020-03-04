@@ -1,5 +1,6 @@
 package pt.pak3nuh.hollywood.processor.generator
 
+import pt.pak3nuh.hollywood.processor.generator.context.GenerationContext
 import java.nio.file.Paths
 import javax.annotation.processing.AbstractProcessor
 import javax.annotation.processing.RoundEnvironment
@@ -23,11 +24,12 @@ class GeneratorFacade : AbstractProcessor() {
         val destinationFolder: String = processingEnv.options["kapt.kotlin.generated"]
                 ?: throw IllegalStateException("Generated source folder is mandatory")
 
+        val ctx = GenerationContext()
         roundEnv.getElementsAnnotatedWith(actorAnnotation)
                 .asSequence()
                 .map {
                     logInfo("Discovered element for processing $it")
-                    ActorProxyGenerator(it)
+                    ActorProxyGenerator(it, ctx)
                 }.map {
                     it.generate()
                 }.forEach {

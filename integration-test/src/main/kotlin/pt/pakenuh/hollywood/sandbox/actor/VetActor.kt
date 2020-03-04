@@ -2,7 +2,6 @@ package pt.pakenuh.hollywood.sandbox.actor
 
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.isActive
-import pt.pak3nuh.hollywood.actor.proxy.ActorProxy
 import pt.pak3nuh.hollywood.processor.Actor
 import pt.pakenuh.hollywood.sandbox.Loggers
 import pt.pakenuh.hollywood.sandbox.clinic.Exam
@@ -19,9 +18,7 @@ interface VetActor {
     suspend fun startWork()
 }
 
-class VetProxy(override val delegate: VetActor, override val actorId: String) : ActorProxy<VetActor>, VetActor by delegate
-
-class VetFactory(private val actors: ClinicActors, private val maxSlots: Int) : FactoryBase<VetActor, VetProxy>(VetActor::class, VetProxy::class, ::VetProxy) {
+class VetFactory(private val actors: ClinicActors, private val maxSlots: Int) : FactoryBase<VetActor, VetActorProxy>(VetActor::class, VetActorProxy::class, ::VetActorProxy) {
     fun createVet(): VetActor = VetActorImpl(actors, maxSlots)
 }
 

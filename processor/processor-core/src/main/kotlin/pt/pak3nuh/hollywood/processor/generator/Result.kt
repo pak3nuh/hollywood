@@ -6,11 +6,9 @@ import com.squareup.kotlinpoet.TypeSpec
 
 sealed class Result
 
-class TypeResult(private val typeSpec: TypeSpec) : Result() {
+class TypeResult(private val className: ClassName, private val typeSpec: TypeSpec) : Result() {
     fun toSourceFile(): SourceFile {
-        val typeName = requireNotNull(typeSpec.name) { "Type name is mandatory" }
-        val asClassName = ClassName.bestGuess(typeName)
-        val fileSpec = FileSpec.get(asClassName.packageName, typeSpec)
+        val fileSpec = FileSpec.get(className.packageName, typeSpec)
         return SourceFile(fileSpec)
     }
 }

@@ -1,6 +1,5 @@
 package pt.pakenuh.hollywood.sandbox.actor
 
-import pt.pak3nuh.hollywood.actor.proxy.ActorProxy
 import pt.pak3nuh.hollywood.processor.Actor
 import pt.pakenuh.hollywood.sandbox.Loggers
 import pt.pakenuh.hollywood.sandbox.pet.Pet
@@ -10,9 +9,7 @@ interface PetActor {
     suspend fun applyTreatment(treatment: Treatment)
 }
 
-class PetProxy(override val delegate: PetActor, override val actorId: String) : ActorProxy<PetActor>, PetActor by delegate
-
-class PetFactory(private val actors: ClinicActors) : FactoryBase<PetActor, PetProxy>(PetActor::class, PetProxy::class, ::PetProxy) {
+class PetFactory(private val actors: ClinicActors) : FactoryBase<PetActor, PetActorProxy>(PetActor::class, PetActorProxy::class, ::PetActorProxy) {
     fun createPet(pet: Pet): PetActor = PetActorImpl(pet, actors)
 }
 

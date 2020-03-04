@@ -9,7 +9,7 @@ interface PetActor {
     suspend fun applyTreatment(treatment: Treatment)
 }
 
-class PetFactory(private val actors: ClinicActors) : FactoryBase<PetActor, PetActorProxy>(PetActor::class, PetActorProxy::class, ::PetActorProxy) {
+class PetFactory(private val actors: ClinicActors) : PetActorBaseFactory {
     fun createPet(pet: Pet): PetActor = PetActorImpl(pet, actors)
 }
 

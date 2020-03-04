@@ -2,11 +2,10 @@ package pt.pak3nuh.hollywood.processor.generator
 
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
-import pt.pak3nuh.hollywood.processor.Generated
-import pt.pak3nuh.hollywood.processor.generator.context.GenerationAnnotation
+import pt.pak3nuh.hollywood.actor.proxy.ActorProxy
+import pt.pak3nuh.hollywood.processor.generator.context.GenerationAnnotation.buildGenerationAnnotation
 import pt.pak3nuh.hollywood.processor.generator.context.GenerationContext
 import pt.pak3nuh.hollywood.processor.visitor.TypeElementVisitor
-import java.time.Instant
 import javax.lang.model.element.Element
 import javax.lang.model.element.TypeElement
 
@@ -19,8 +18,8 @@ class ActorProxyGenerator(private val element: Element, private val ctx: Generat
 
     override fun visitType(e: TypeElement, context: GenerationContext): Result {
         val actorInterface = e.asType().asTypeName()
-        val newClassName = ClassName.bestGuess("${actorInterface}Proxy")
 
+        val newClassName = ClassName.bestGuess("${actorInterface}Proxy")
         val parameterizedProxy = actorProxyInterface.parameterizedBy(actorInterface)
 
         val (delegateParam, delegateProperty) = ctrPropertyPair("delegate", actorInterface)
@@ -33,7 +32,7 @@ class ActorProxyGenerator(private val element: Element, private val ctx: Generat
                 .build()
 
         val classBuilder = TypeSpec.classBuilder(newClassName)
-                .addAnnotation(ctx.getGenerationAnnotation())
+                .addAnnotation(ctx.buildGenerationAnnotation())
                 .primaryConstructor(ctr)
                 .addProperty(delegateProperty)
                 .addProperty(actorIdProperty)
@@ -53,22 +52,8 @@ class ActorProxyGenerator(private val element: Element, private val ctx: Generat
         return Pair(delegateParam, delegateProperty)
     }
 
-    private fun GenerationContext.getGenerationAnnotation(): AnnotationSpec {
-        val existing = get(GenerationAnnotation)
-        if (existing != null) {
-            return existing
-        }
-
-        val generatedAnnotation = AnnotationSpec.builder(Generated::class)
-                .addMember("%S", Instant.now())
-                .build()
-
-        set(GenerationAnnotation, generatedAnnotation)
-        return generatedAnnotation
-    }
-
     private companion object {
-        val actorProxyInterface: ClassName = ClassName.bestGuess("pt.pak3nuh.hollywood.actor.proxy.ActorProxy")
+        val actorProxyInterface = ActorProxy::class.asClassName()
     }
 }
 

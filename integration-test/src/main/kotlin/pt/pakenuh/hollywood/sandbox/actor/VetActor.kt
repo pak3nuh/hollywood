@@ -18,7 +18,7 @@ interface VetActor {
     suspend fun startWork()
 }
 
-class VetFactory(private val actors: ClinicActors, private val maxSlots: Int) : FactoryBase<VetActor, VetActorProxy>(VetActor::class, VetActorProxy::class, ::VetActorProxy) {
+class VetFactory(private val actors: ClinicActors, private val maxSlots: Int) : VetActorBaseFactory {
     fun createVet(): VetActor = VetActorImpl(actors, maxSlots)
 }
 

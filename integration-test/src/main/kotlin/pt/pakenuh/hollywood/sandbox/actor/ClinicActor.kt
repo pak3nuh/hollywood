@@ -30,8 +30,7 @@ interface ClinicActor {
     }
 }
 
-class ClinicFactory(private val vets: List<Vet>, private val actors: ClinicActors) :
-        FactoryBase<ClinicActor, ClinicActorProxy>(ClinicActor::class, ClinicActorProxy::class, ::ClinicActorProxy) {
+class ClinicFactory(private val vets: List<Vet>, private val actors: ClinicActors) : ClinicActorBaseFactory {
     fun createClinic(): ClinicActor = ClinicActorImpl(vets, actors)
 }
 

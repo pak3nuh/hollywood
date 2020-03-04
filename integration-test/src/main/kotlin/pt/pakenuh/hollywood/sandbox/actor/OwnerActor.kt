@@ -11,7 +11,7 @@ interface OwnerActor {
     suspend fun petReady()
 }
 
-class OwnerFactory(private val clinicActors: ClinicActors) : FactoryBase<OwnerActor, OwnerActorProxy>(OwnerActor::class, OwnerActorProxy::class, ::OwnerActorProxy) {
+class OwnerFactory(private val clinicActors: ClinicActors) : OwnerActorBaseFactory {
     fun createOwner(ownerId: OwnerId): OwnerActor = OwnerActorImpl(clinicActors, ownerId)
 }
 

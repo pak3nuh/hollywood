@@ -11,5 +11,4 @@ class SourceFile(private val fileSpec: FileSpec) {
     fun writeTo(folder: Path) {
         fileSpec.writeTo(folder)
     }
-
 }

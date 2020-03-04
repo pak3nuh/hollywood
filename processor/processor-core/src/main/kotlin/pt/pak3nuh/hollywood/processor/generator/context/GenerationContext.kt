@@ -1,6 +1,6 @@
 package pt.pak3nuh.hollywood.processor.generator.context
 
-class GenerationContext {
+class GenerationContext(val logger: Logger) {
 
     private val map = mutableMapOf<Property<*>, Any>()
 

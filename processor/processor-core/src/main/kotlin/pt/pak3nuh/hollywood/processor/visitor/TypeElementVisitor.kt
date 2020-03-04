@@ -13,7 +13,7 @@ abstract class TypeElementVisitor: AbstractElementVisitor6<Result, GenerationCon
 
     final override fun visitTypeParameter(e: TypeParameterElement?, p: GenerationContext): Result = NoOpResult
 
-    override fun visitExecutable(e: ExecutableElement, p: GenerationContext): Result = NoOpResult
+    final override fun visitExecutable(e: ExecutableElement, p: GenerationContext): Result = NoOpResult
 
     final override fun visitVariable(e: VariableElement?, p: GenerationContext): Result = NoOpResult
 

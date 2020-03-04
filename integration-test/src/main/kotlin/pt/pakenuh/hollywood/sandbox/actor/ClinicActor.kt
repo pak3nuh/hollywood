@@ -2,18 +2,26 @@ package pt.pakenuh.hollywood.sandbox.actor
 
 import kotlinx.coroutines.CompletableJob
 import kotlinx.coroutines.Job
+import pt.pak3nuh.hollywood.actor.proxy.ActorProxyBase
+import pt.pak3nuh.hollywood.actor.proxy.ProxyConfiguration
 import pt.pak3nuh.hollywood.processor.Actor
 import pt.pak3nuh.hollywood.system.ActorSystem
 import pt.pakenuh.hollywood.sandbox.Loggers
 import pt.pakenuh.hollywood.sandbox.PetClinicException
-import pt.pakenuh.hollywood.sandbox.clinic.*
+import pt.pakenuh.hollywood.sandbox.clinic.Exam
+import pt.pakenuh.hollywood.sandbox.clinic.ExamResult
+import pt.pakenuh.hollywood.sandbox.clinic.NokResult
+import pt.pakenuh.hollywood.sandbox.clinic.OkResult
+import pt.pakenuh.hollywood.sandbox.clinic.Receipt
 import pt.pakenuh.hollywood.sandbox.owner.CreditCard
 import pt.pakenuh.hollywood.sandbox.owner.OwnerId
 import pt.pakenuh.hollywood.sandbox.pet.Pet
 import pt.pakenuh.hollywood.sandbox.pet.PetId
 import pt.pakenuh.hollywood.sandbox.vet.Vet
 
-@Actor
+open class CustomProxy<T>(delegate: T, config: ProxyConfiguration) : ActorProxyBase<T>(delegate, config)
+
+@Actor(CustomProxy::class)
 interface ClinicActor {
     suspend fun checkinPet(pet: Pet, contacts: OwnerContacts)
     suspend fun checkoutPet(petId: PetId, creditCard: CreditCard): Receipt

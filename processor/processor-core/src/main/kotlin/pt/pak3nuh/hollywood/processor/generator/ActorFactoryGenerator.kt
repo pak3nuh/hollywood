@@ -1,7 +1,14 @@
 package pt.pak3nuh.hollywood.processor.generator
 
-import com.squareup.kotlinpoet.*
+import com.squareup.kotlinpoet.ClassName
+import com.squareup.kotlinpoet.FunSpec
+import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
+import com.squareup.kotlinpoet.PropertySpec
+import com.squareup.kotlinpoet.TypeName
+import com.squareup.kotlinpoet.TypeSpec
+import com.squareup.kotlinpoet.asClassName
+import com.squareup.kotlinpoet.asTypeName
 import pt.pak3nuh.hollywood.actor.ActorFactory
 import pt.pak3nuh.hollywood.actor.proxy.ProxyConfiguration
 import pt.pak3nuh.hollywood.processor.generator.context.GenerationAnnotation.buildGenerationAnnotation
@@ -36,7 +43,7 @@ class ActorFactoryGenerator(
                 .addParameter("delegate", actorInterface)
                 .addParameter("config", proxyConfigInterface)
                 .returns(proxyName)
-                .addStatement("return %T(delegate, config.actorId)", proxyName)
+                .addStatement("return %T(delegate, config)", proxyName)
                 .build()
 
         val classBuilder = TypeSpec.interfaceBuilder(factoryName)

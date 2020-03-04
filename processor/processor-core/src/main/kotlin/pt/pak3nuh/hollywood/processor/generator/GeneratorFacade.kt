@@ -5,11 +5,15 @@ import pt.pak3nuh.hollywood.processor.generator.context.GenerationContext
 import pt.pak3nuh.hollywood.processor.generator.context.Logger
 import java.nio.file.Paths
 import javax.annotation.processing.AbstractProcessor
+import javax.annotation.processing.ProcessingEnvironment
 import javax.annotation.processing.RoundEnvironment
 import javax.lang.model.SourceVersion
 import javax.lang.model.element.TypeElement
 
 class GeneratorFacade : AbstractProcessor() {
+
+    private lateinit var logger: Logger
+
     override fun process(annotations: Set<TypeElement>, roundEnv: RoundEnvironment): Boolean {
         if (annotations.isEmpty()) {
             return false
@@ -21,14 +25,13 @@ class GeneratorFacade : AbstractProcessor() {
         val destinationFolder: String = processingEnv.options["kapt.kotlin.generated"]
                 ?: error("Generated source folder is mandatory")
 
-        val logger = Logger(processingEnv.messager)
         val ctx = GenerationContext(logger)
         roundEnv.getElementsAnnotatedWith(actorAnnotation)
                 .asSequence()
                 .flatMap {
                     logger.logInfo("Discovered element for processing $it")
                     sequenceOf<Generator>(
-                            ActorProxyGenerator(it, ctx),
+                            ActorProxyGenerator(it, processingEnv.elementUtils, ctx),
                             ActorFactoryGenerator(it, ctx)
                     )
                 }.map {
@@ -38,6 +41,11 @@ class GeneratorFacade : AbstractProcessor() {
                 }
 
         return true
+    }
+
+    override fun init(processingEnv: ProcessingEnvironment) {
+        super.init(processingEnv)
+        logger = Logger(processingEnv.messager)
     }
 
     override fun getSupportedSourceVersion(): SourceVersion = SourceVersion.RELEASE_6

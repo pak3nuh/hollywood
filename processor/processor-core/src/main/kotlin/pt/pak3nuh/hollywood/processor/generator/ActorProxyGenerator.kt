@@ -1,15 +1,26 @@
 package pt.pak3nuh.hollywood.processor.generator
 
-import com.squareup.kotlinpoet.*
+import com.squareup.kotlinpoet.ClassName
+import com.squareup.kotlinpoet.FunSpec
+import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
-import pt.pak3nuh.hollywood.actor.proxy.ActorProxy
+import com.squareup.kotlinpoet.TypeSpec
+import com.squareup.kotlinpoet.asTypeName
+import pt.pak3nuh.hollywood.actor.proxy.ProxyConfiguration
+import pt.pak3nuh.hollywood.processor.Actor
 import pt.pak3nuh.hollywood.processor.generator.context.GenerationAnnotation.buildGenerationAnnotation
 import pt.pak3nuh.hollywood.processor.generator.context.GenerationContext
 import pt.pak3nuh.hollywood.processor.visitor.TypeElementVisitor
 import javax.lang.model.element.Element
 import javax.lang.model.element.TypeElement
+import javax.lang.model.util.Elements
 
-class ActorProxyGenerator(private val element: Element, private val ctx: GenerationContext) : Generator, TypeElementVisitor() {
+// todo refactor this class to play better with the visitor or drop it alltogether
+class ActorProxyGenerator(
+        private val element: Element,
+        private val elements: Elements,
+        private val ctx: GenerationContext
+) : Generator, TypeElementVisitor() {
 
     override fun generate(): SourceFile {
         val result = element.accept(this, ctx) as? TypeResult ?: error("Result is not a class")
@@ -20,40 +31,37 @@ class ActorProxyGenerator(private val element: Element, private val ctx: Generat
         val actorInterface = e.asType().asTypeName()
 
         val newClassName = ClassName.bestGuess("${actorInterface}Proxy")
-        val parameterizedProxy = actorProxyInterface.parameterizedBy(actorInterface)
+        val parameterizedProxy = getProxyBaseClass(e).parameterizedBy(actorInterface)
 
-        val (delegateParam, delegateProperty) = ctrPropertyPair("delegate", actorInterface)
-        val (actorIdParam ,actorIdProperty) = ctrPropertyPair("actorId", String::class.asTypeName())
+        val delegateParam = ParameterSpec.builder("delegate", actorInterface).build()
+        val configParam = ParameterSpec.builder("config", ProxyConfiguration::class.asTypeName()).build()
 
         val ctr = FunSpec
                 .constructorBuilder()
                 .addParameter(delegateParam)
-                .addParameter(actorIdParam)
+                .addParameter(configParam)
                 .build()
 
         val classBuilder = TypeSpec.classBuilder(newClassName)
                 .addAnnotation(ctx.buildGenerationAnnotation())
                 .primaryConstructor(ctr)
-                .addProperty(delegateProperty)
-                .addProperty(actorIdProperty)
-                .addSuperinterface(parameterizedProxy)
+                .superclass(parameterizedProxy)
+                .addSuperclassConstructorParameter(delegateParam.name)
+                .addSuperclassConstructorParameter(configParam.name)
                 .addSuperinterface(actorInterface, "delegate")
 
         return TypeResult(newClassName, classBuilder.build())
     }
 
-    private fun ctrPropertyPair(name: String, actorInterface: TypeName): Pair<ParameterSpec, PropertySpec> {
-        val delegateParam = ParameterSpec.builder(name, actorInterface)
-                .build()
-        val delegateProperty = PropertySpec.builder(name, actorInterface)
-                .addModifiers(KModifier.OVERRIDE)
-                .initializer(name)
-                .build()
-        return Pair(delegateParam, delegateProperty)
-    }
-
-    private companion object {
-        val actorProxyInterface = ActorProxy::class.asClassName()
+    private fun getProxyBaseClass(e: TypeElement): ClassName {
+        val annotationValue = e.annotationMirrors.asSequence()
+                .filter { it.annotationType.toString() == Actor::class.qualifiedName }
+                .flatMap { annotation ->
+                    elements.getElementValuesWithDefaults(annotation).filterKeys { key ->
+                        key.simpleName.contentEquals(Actor::value.name)
+                    }.values.asSequence()
+                }.first()
+        return ClassName.bestGuess(annotationValue.value.toString())
     }
 }
 

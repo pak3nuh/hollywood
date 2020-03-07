@@ -11,23 +11,18 @@ import pt.pak3nuh.hollywood.processor.Actor
 import pt.pak3nuh.hollywood.processor.generator.context.GenerationAnnotation.buildGenerationAnnotation
 import pt.pak3nuh.hollywood.processor.generator.context.GenerationContext
 import pt.pak3nuh.hollywood.processor.visitor.TypeElementVisitor
-import javax.lang.model.element.Element
 import javax.lang.model.element.TypeElement
 import javax.lang.model.util.Elements
 
-// todo refactor this class to play better with the visitor or drop it alltogether
 class ActorProxyGenerator(
-        private val element: Element,
-        private val elements: Elements,
-        private val ctx: GenerationContext
-) : Generator, TypeElementVisitor() {
+        private val elements: Elements
+) : FileGenerator, TypeElementVisitor() {
 
-    override fun generate(): SourceFile {
-        val result = element.accept(this, ctx) as? TypeResult ?: error("Result is not a class")
-        return result.toSourceFile()
+    override fun generate(element: TypeElement, context: GenerationContext): SourceFile {
+        return visitType(element, context).toSourceFile()
     }
 
-    override fun visitType(e: TypeElement, context: GenerationContext): Result {
+    override fun visitType(e: TypeElement, context: GenerationContext): TypeResult {
         val actorInterface = e.asType().asTypeName()
 
         val newClassName = ClassName.bestGuess("${actorInterface}Proxy")
@@ -43,7 +38,7 @@ class ActorProxyGenerator(
                 .build()
 
         val classBuilder = TypeSpec.classBuilder(newClassName)
-                .addAnnotation(ctx.buildGenerationAnnotation())
+                .addAnnotation(context.buildGenerationAnnotation())
                 .primaryConstructor(ctr)
                 .superclass(parameterizedProxy)
                 .addSuperclassConstructorParameter(delegateParam.name)

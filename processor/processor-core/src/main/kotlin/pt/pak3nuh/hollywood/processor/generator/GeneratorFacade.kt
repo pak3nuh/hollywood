@@ -2,12 +2,13 @@ package pt.pak3nuh.hollywood.processor.generator
 
 import pt.pak3nuh.hollywood.processor.Actor
 import pt.pak3nuh.hollywood.processor.generator.context.GenerationContext
-import pt.pak3nuh.hollywood.processor.generator.context.Logger
+import pt.pak3nuh.hollywood.processor.generator.util.Logger
 import java.nio.file.Paths
 import javax.annotation.processing.AbstractProcessor
 import javax.annotation.processing.ProcessingEnvironment
 import javax.annotation.processing.RoundEnvironment
 import javax.lang.model.SourceVersion
+import javax.lang.model.element.Element
 import javax.lang.model.element.TypeElement
 
 class GeneratorFacade : AbstractProcessor() {
@@ -25,22 +26,29 @@ class GeneratorFacade : AbstractProcessor() {
         val destinationFolder: String = processingEnv.options["kapt.kotlin.generated"]
                 ?: error("Generated source folder is mandatory")
 
-        val ctx = GenerationContext(logger)
-        roundEnv.getElementsAnnotatedWith(actorAnnotation)
-                .asSequence()
-                .flatMap {
-                    logger.logInfo("Discovered element for processing $it")
-                    sequenceOf<Generator>(
-                            ActorProxyGenerator(it, processingEnv.elementUtils, ctx),
-                            ActorFactoryGenerator(it, ctx)
-                    )
-                }.map {
-                    it.generate()
-                }.forEach {
-                    it.writeTo(Paths.get(destinationFolder))
-                }
+        generateFiles(roundEnv.getElementsAnnotatedWith(actorAnnotation), destinationFolder)
 
         return true
+    }
+
+    private fun generateFiles(annotatedElements: Set<Element>, destinationFolder: String) {
+        val ctx = GenerationContext(logger)
+        val generators = sequenceOf<FileGenerator>(
+                ActorProxyGenerator(processingEnv.elementUtils),
+                ActorFactoryGenerator()
+        )
+        annotatedElements.asSequence()
+                .filterIsInstance<TypeElement>()
+                .onEach {
+                    logger.logInfo("Discovered element for processing $it")
+                }.flatMap { element ->
+                    generators.map { generator ->
+                        generator.generate(element, ctx)
+                    }
+                }.forEach {
+                    logger.logInfo("Writing source file $it")
+                    it.writeTo(Paths.get(destinationFolder))
+                }
     }
 
     override fun init(processingEnv: ProcessingEnvironment) {

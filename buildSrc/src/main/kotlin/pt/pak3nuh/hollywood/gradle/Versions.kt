@@ -5,7 +5,7 @@ object Versions {
     val kotlin = "1.3.70"
     val junit = "5.6.0"
     val assertK = "0.20"
-    val coroutines = "1.3.3"
+    val coroutines = "1.3.4"
 }
 
 object Dependencies {

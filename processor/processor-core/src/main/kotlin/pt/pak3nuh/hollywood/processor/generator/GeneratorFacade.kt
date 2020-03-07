@@ -3,6 +3,7 @@ package pt.pak3nuh.hollywood.processor.generator
 import pt.pak3nuh.hollywood.processor.Actor
 import pt.pak3nuh.hollywood.processor.generator.context.GenerationContext
 import pt.pak3nuh.hollywood.processor.generator.util.Logger
+import pt.pak3nuh.hollywood.processor.visitor.MethodGenerator
 import java.nio.file.Paths
 import javax.annotation.processing.AbstractProcessor
 import javax.annotation.processing.ProcessingEnvironment
@@ -32,9 +33,10 @@ class GeneratorFacade : AbstractProcessor() {
     }
 
     private fun generateFiles(annotatedElements: Set<Element>, destinationFolder: String) {
-        val ctx = GenerationContext(logger)
+        val ctx = GenerationContext(logger, processingEnv.typeUtils, processingEnv.elementUtils)
+        val methodGenerator = MethodGenerator()
         val generators = sequenceOf<FileGenerator>(
-                ActorProxyGenerator(processingEnv.elementUtils),
+                ActorProxyGenerator(processingEnv.elementUtils, methodGenerator),
                 ActorFactoryGenerator()
         )
         annotatedElements.asSequence()

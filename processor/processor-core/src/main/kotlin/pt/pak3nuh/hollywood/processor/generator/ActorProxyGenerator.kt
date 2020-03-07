@@ -10,23 +10,25 @@ import pt.pak3nuh.hollywood.actor.proxy.ProxyConfiguration
 import pt.pak3nuh.hollywood.processor.Actor
 import pt.pak3nuh.hollywood.processor.generator.context.GenerationAnnotation.buildGenerationAnnotation
 import pt.pak3nuh.hollywood.processor.generator.context.GenerationContext
+import pt.pak3nuh.hollywood.processor.visitor.MethodGenerator
 import pt.pak3nuh.hollywood.processor.visitor.TypeElementVisitor
 import javax.lang.model.element.TypeElement
 import javax.lang.model.util.Elements
 
 class ActorProxyGenerator(
-        private val elements: Elements
+        private val elements: Elements,
+        private val methodGenerator: MethodGenerator
 ) : FileGenerator, TypeElementVisitor() {
 
     override fun generate(element: TypeElement, context: GenerationContext): SourceFile {
         return visitType(element, context).toSourceFile()
     }
 
-    override fun visitType(e: TypeElement, context: GenerationContext): TypeResult {
-        val actorInterface = e.asType().asTypeName()
+    override fun visitType(typeElement: TypeElement, context: GenerationContext): TypeResult {
+        val actorInterface = typeElement.asType().asTypeName()
 
         val newClassName = ClassName.bestGuess("${actorInterface}Proxy")
-        val parameterizedProxy = getProxyBaseClass(e).parameterizedBy(actorInterface)
+        val parameterizedProxy = getProxyBaseClass(typeElement).parameterizedBy(actorInterface)
 
         val delegateParam = ParameterSpec.builder("delegate", actorInterface).build()
         val configParam = ParameterSpec.builder("config", ProxyConfiguration::class.asTypeName()).build()
@@ -43,7 +45,14 @@ class ActorProxyGenerator(
                 .superclass(parameterizedProxy)
                 .addSuperclassConstructorParameter(delegateParam.name)
                 .addSuperclassConstructorParameter(configParam.name)
-                .addSuperinterface(actorInterface, "delegate")
+                .addSuperinterface(actorInterface)
+
+        typeElement.enclosedElements.asSequence()
+                .map { it.accept(methodGenerator, context) }
+                .filterIsInstance<MethodResult>()
+                .forEach {
+                    classBuilder.addFunction(it.funSpec)
+                }
 
         return TypeResult(newClassName, classBuilder.build())
     }

@@ -1,15 +1,13 @@
 package pt.pak3nuh.hollywood.processor.visitor
 
+import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.ParameterSpec
-import com.squareup.kotlinpoet.TypeName
 import pt.pak3nuh.hollywood.processor.generator.MethodResult
 import pt.pak3nuh.hollywood.processor.generator.Result
 import pt.pak3nuh.hollywood.processor.generator.context.GenerationContext
 import javax.lang.model.element.ExecutableElement
-import javax.lang.model.element.Name
-import javax.lang.model.element.TypeElement
 import javax.lang.model.element.VariableElement
 import javax.lang.model.type.DeclaredType
 import javax.lang.model.type.TypeMirror
@@ -28,48 +26,47 @@ class MethodGenerator : MethodElementVisitor() {
         val returnType = checkIsSuspend(method.parameters, method.returnType, context)
 
         val parameterSpecs = method.parameters.asSequence()
-                .filterIsInstance<TypeElement>()
                 .filter { !context.isAssignableCoroutine(it.asType()) }
-                .map { toSpec(it.simpleName, context.asKotlinTypeName(it)) }
+                .map {
+                    ParameterSpec.builder(it.simpleName.toString(), context.asKotlinTypeName(it.asType()))
+                            .build()
+                }
+                .toList()
 
         val builder = FunSpec.builder(methodName)
                 .addModifiers(KModifier.OVERRIDE, KModifier.SUSPEND)
                 .returns(context.asKotlinTypeName(returnType))
-                .addParameters(parameterSpecs.asIterable())
-                .addStatement(buildDelegateCall(context, methodName, returnType, parameterSpecs))
+                .addParameters(parameterSpecs)
+                .addCode(buildDelegateCall(context, methodName, returnType, parameterSpecs))
 
         return MethodResult(builder.build())
     }
 
-    private fun buildDelegateCall(context: GenerationContext, methodName: String, returnType: TypeMirror, parameterSpecs: Sequence<ParameterSpec>): String {
-        val parametersAsString = parameterSpecs.map { it.name }.joinToString(", ")
-        fun buildCall() = """execCall {
-                                    |delegate.$methodName($parametersAsString)
-                            |}""".trimMargin()
-        return if (context.isAssignable(returnType, context.unitType)) {
-            buildCall()
+    private fun buildDelegateCall(context: GenerationContext, methodName: String, returnType: TypeMirror, parameterSpecs: List<ParameterSpec>): CodeBlock {
+        val parametersAsString = parameterSpecs.joinToString(", ") { it.name }
+        val hasReturnStatement = !context.isAssignable(returnType, context.unitType)
+        val builder = if (hasReturnStatement) {
+            CodeBlock.builder().add("return ")
         } else {
-            "return ${buildCall()}"
+            CodeBlock.builder()
         }
-    }
 
-    private fun toSpec(name: Name, type: TypeName): ParameterSpec {
-        // todo translate java to kotlin collections
-        return ParameterSpec.builder(name.toString(), type)
+        return builder.beginControlFlow("execCall")
+                .indent().addStatement("delegate.%L(%L)", methodName, parametersAsString)
+                .unindent().endControlFlow()
                 .build()
     }
 
     private fun checkIsSuspend(parameters: Iterable<VariableElement>, returnType: TypeMirror, context: GenerationContext): TypeMirror {
         // something like nullable Continuation<? super type>
         val continuationParameter = parameters.asSequence()
-                .mapIndexed { idx, p ->
-                    p.asType() to idx
-                }.sortedByDescending {
-            // usually is the last parameter
-            it.second
-        }.firstOrNull {
-            context.isAssignableCoroutine(it.first)
-        }?.first
+                .mapIndexed { idx, p -> p.asType() to idx }
+                .sortedByDescending {
+                    // usually is the last parameter
+                    it.second
+                }
+                .firstOrNull { context.isAssignableCoroutine(it.first) }
+                ?.first
 
         checkNotNull(continuationParameter) { "Suspending functions must have a Continuation parameter" }
         check(context.isAssignable(returnType, context.coroutineJvmReturnType)) { "Return type is not valid for suspending functions" }

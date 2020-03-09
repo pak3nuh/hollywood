@@ -4,6 +4,7 @@ import pt.pak3nuh.hollywood.processor.Actor
 import pt.pak3nuh.hollywood.processor.generator.context.GenerationContext
 import pt.pak3nuh.hollywood.processor.generator.util.Logger
 import pt.pak3nuh.hollywood.processor.visitor.MethodGenerator
+import pt.pak3nuh.hollywood.processor.visitor.TypeConverter
 import java.nio.file.Paths
 import javax.annotation.processing.AbstractProcessor
 import javax.annotation.processing.ProcessingEnvironment
@@ -34,7 +35,8 @@ class GeneratorFacade : AbstractProcessor() {
 
     private fun generateFiles(annotatedElements: Set<Element>, destinationFolder: String) {
         val ctx = GenerationContext(logger, processingEnv.typeUtils, processingEnv.elementUtils)
-        val methodGenerator = MethodGenerator()
+        val typeConverter = TypeConverter()
+        val methodGenerator = MethodGenerator(typeConverter)
         val generators = sequenceOf<FileGenerator>(
                 ActorProxyGenerator(processingEnv.elementUtils, methodGenerator),
                 ActorFactoryGenerator()
@@ -58,7 +60,7 @@ class GeneratorFacade : AbstractProcessor() {
         logger = Logger(processingEnv.messager)
     }
 
-    override fun getSupportedSourceVersion(): SourceVersion = SourceVersion.RELEASE_6
+    override fun getSupportedSourceVersion(): SourceVersion = SourceVersion.RELEASE_8
 
     override fun getSupportedAnnotationTypes(): MutableSet<String> = mutableSetOf(Actor::class.qualifiedName!!)
 }

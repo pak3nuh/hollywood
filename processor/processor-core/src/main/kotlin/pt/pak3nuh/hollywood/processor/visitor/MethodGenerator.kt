@@ -13,7 +13,7 @@ import javax.lang.model.type.DeclaredType
 import javax.lang.model.type.TypeMirror
 import javax.lang.model.type.WildcardType
 
-class MethodGenerator : MethodElementVisitor() {
+class MethodGenerator(private val typeConverter: TypeConverter) : MethodElementVisitor() {
 
     override fun visitExecutable(method: ExecutableElement, context: GenerationContext): Result {
         return buildMethodResult(context, method)
@@ -25,17 +25,19 @@ class MethodGenerator : MethodElementVisitor() {
         context.logger.logDebug("Checking is suspend")
         val returnType = checkIsSuspend(method.parameters, method.returnType, context)
 
+        // todo sometimes parameter names have generated names
         val parameterSpecs = method.parameters.asSequence()
                 .filter { !context.isAssignableCoroutine(it.asType()) }
                 .map {
-                    ParameterSpec.builder(it.simpleName.toString(), context.asKotlinTypeName(it.asType()))
+                    ParameterSpec.builder(it.simpleName.toString(), typeConverter.convert(it))
                             .build()
                 }
                 .toList()
 
+        // todo doc generic methods not supported by design
         val builder = FunSpec.builder(methodName)
                 .addModifiers(KModifier.OVERRIDE, KModifier.SUSPEND)
-                .returns(context.asKotlinTypeName(returnType))
+                .returns(typeConverter.convert(returnType))
                 .addParameters(parameterSpecs)
                 .addCode(buildDelegateCall(context, methodName, returnType, parameterSpecs))
 

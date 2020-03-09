@@ -7,9 +7,9 @@ import javax.lang.model.element.PackageElement
 import javax.lang.model.element.TypeElement
 import javax.lang.model.element.TypeParameterElement
 import javax.lang.model.element.VariableElement
-import javax.lang.model.util.AbstractElementVisitor6
+import javax.lang.model.util.AbstractElementVisitor8
 
-abstract class MethodElementVisitor : AbstractElementVisitor6<Result, GenerationContext>() {
+abstract class MethodElementVisitor : AbstractElementVisitor8<Result, GenerationContext>() {
 
     override fun visitType(e: TypeElement?, p: GenerationContext?) = NoOpResult
 

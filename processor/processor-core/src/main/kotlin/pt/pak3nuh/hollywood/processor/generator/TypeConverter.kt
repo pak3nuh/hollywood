@@ -1,4 +1,4 @@
-package pt.pak3nuh.hollywood.processor.visitor
+package pt.pak3nuh.hollywood.processor.generator
 
 import com.squareup.kotlinpoet.ARRAY
 import com.squareup.kotlinpoet.BOOLEAN

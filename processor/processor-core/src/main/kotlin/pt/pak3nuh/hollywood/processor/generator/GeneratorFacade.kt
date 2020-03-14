@@ -3,8 +3,6 @@ package pt.pak3nuh.hollywood.processor.generator
 import pt.pak3nuh.hollywood.processor.Actor
 import pt.pak3nuh.hollywood.processor.generator.context.GenerationContext
 import pt.pak3nuh.hollywood.processor.generator.util.Logger
-import pt.pak3nuh.hollywood.processor.visitor.MethodGenerator
-import pt.pak3nuh.hollywood.processor.visitor.TypeConverter
 import java.nio.file.Paths
 import javax.annotation.processing.AbstractProcessor
 import javax.annotation.processing.ProcessingEnvironment

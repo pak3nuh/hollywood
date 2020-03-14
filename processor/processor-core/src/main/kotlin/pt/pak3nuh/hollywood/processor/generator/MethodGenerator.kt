@@ -1,12 +1,11 @@
-package pt.pak3nuh.hollywood.processor.visitor
+package pt.pak3nuh.hollywood.processor.generator
 
 import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.ParameterSpec
-import pt.pak3nuh.hollywood.processor.generator.MethodResult
-import pt.pak3nuh.hollywood.processor.generator.Result
 import pt.pak3nuh.hollywood.processor.generator.context.GenerationContext
+import pt.pak3nuh.hollywood.processor.visitor.MethodElementVisitor
 import javax.lang.model.element.ExecutableElement
 import javax.lang.model.element.VariableElement
 import javax.lang.model.type.DeclaredType

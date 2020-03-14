@@ -10,7 +10,6 @@ import pt.pak3nuh.hollywood.actor.proxy.ProxyConfiguration
 import pt.pak3nuh.hollywood.processor.Actor
 import pt.pak3nuh.hollywood.processor.generator.context.GenerationAnnotation.buildGenerationAnnotation
 import pt.pak3nuh.hollywood.processor.generator.context.GenerationContext
-import pt.pak3nuh.hollywood.processor.visitor.MethodGenerator
 import pt.pak3nuh.hollywood.processor.visitor.TypeElementVisitor
 import javax.lang.model.element.TypeElement
 import javax.lang.model.util.Elements

@@ -24,7 +24,8 @@ class MethodGenerator(private val typeConverter: TypeConverter) : MethodElementV
         context.logger.logDebug("Checking is suspend")
         val returnType = checkIsSuspend(method.parameters, method.returnType, context)
 
-        // todo sometimes parameter names have generated names
+        // todo doc kotlin compiler will sometimes generate random parameter names.
+        // may break optional parameter call
         val parameterSpecs = method.parameters.asSequence()
                 .filter { !context.isAssignableCoroutine(it.asType()) }
                 .map {

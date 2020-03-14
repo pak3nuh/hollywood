@@ -60,5 +60,5 @@ class GeneratorFacade : AbstractProcessor() {
 
     override fun getSupportedSourceVersion(): SourceVersion = SourceVersion.RELEASE_8
 
-    override fun getSupportedAnnotationTypes(): MutableSet<String> = mutableSetOf(Actor::class.qualifiedName!!)
+    override fun getSupportedAnnotationTypes(): Set<String> = setOf(Actor::class.qualifiedName!!)
 }

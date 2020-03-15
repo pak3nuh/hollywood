@@ -11,8 +11,8 @@ import com.squareup.kotlinpoet.asClassName
 import com.squareup.kotlinpoet.asTypeName
 import pt.pak3nuh.hollywood.actor.ActorFactory
 import pt.pak3nuh.hollywood.actor.proxy.ProxyConfiguration
-import pt.pak3nuh.hollywood.processor.generator.context.GenerationAnnotation.buildGenerationAnnotation
 import pt.pak3nuh.hollywood.processor.generator.context.GenerationContext
+import pt.pak3nuh.hollywood.processor.generator.context.buildGenerationAnnotation
 import pt.pak3nuh.hollywood.processor.visitor.TypeElementVisitor
 import javax.lang.model.element.TypeElement
 import kotlin.reflect.KClass

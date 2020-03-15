@@ -24,5 +24,7 @@ import kotlin.reflect.KClass
  * If the above structure is followed, code shouldn't break just by bumping versions.
  * @param value The base **open** class of the actor proxy. It is highly recommended to extend [ActorProxyBase] because the
  * generated proxy classes may require some features defined there.
+ *
+ * **Custom proxies are currently considered experimental and may change in the future.**
  */
 annotation class Actor(val value: KClass<*> = ActorProxyBase::class)

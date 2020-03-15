@@ -8,15 +8,16 @@ import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.asTypeName
 import pt.pak3nuh.hollywood.actor.proxy.ProxyConfiguration
 import pt.pak3nuh.hollywood.processor.Actor
-import pt.pak3nuh.hollywood.processor.generator.context.GenerationAnnotation.buildGenerationAnnotation
 import pt.pak3nuh.hollywood.processor.generator.context.GenerationContext
+import pt.pak3nuh.hollywood.processor.generator.context.buildGenerationAnnotation
+import pt.pak3nuh.hollywood.processor.generator.types.TypeUtil
 import pt.pak3nuh.hollywood.processor.visitor.TypeElementVisitor
+import javax.lang.model.element.ElementKind
 import javax.lang.model.element.TypeElement
-import javax.lang.model.util.Elements
+import javax.lang.model.type.TypeMirror
 
 class ActorProxyGenerator(
-        private val elements: Elements,
-        private val methodGenerator: MethodGenerator
+        private val methodGenerator: MethodVisitor
 ) : FileGenerator, TypeElementVisitor() {
 
     override fun generate(element: TypeElement, context: GenerationContext): SourceFile {
@@ -24,10 +25,13 @@ class ActorProxyGenerator(
     }
 
     override fun visitType(typeElement: TypeElement, context: GenerationContext): TypeResult {
+        require(typeElement.kind == ElementKind.INTERFACE) {
+            "Actor annotation can only be used on interfaces"
+        }
         val actorInterface = typeElement.asType().asTypeName()
 
         val newClassName = ClassName.bestGuess("${actorInterface}Proxy")
-        val parameterizedProxy = getProxyBaseClass(typeElement).parameterizedBy(actorInterface)
+        val parameterizedProxy = getProxyBaseClass(typeElement, context.typeUtil).parameterizedBy(actorInterface)
 
         val delegateParam = ParameterSpec.builder("delegate", actorInterface).build()
         val configParam = ParameterSpec.builder("config", ProxyConfiguration::class.asTypeName()).build()
@@ -56,15 +60,20 @@ class ActorProxyGenerator(
         return TypeResult(newClassName, classBuilder.build())
     }
 
-    private fun getProxyBaseClass(e: TypeElement): ClassName {
+    private fun getProxyBaseClass(e: TypeElement, typeUtil: TypeUtil): ClassName {
         val annotationValue = e.annotationMirrors.asSequence()
                 .filter { it.annotationType.toString() == Actor::class.qualifiedName }
                 .flatMap { annotation ->
-                    elements.getElementValuesWithDefaults(annotation).filterKeys { key ->
+                    typeUtil.getElementValuesWithDefaults(annotation).filterKeys { key ->
                         key.simpleName.contentEquals(Actor::value.name)
                     }.values.asSequence()
                 }.first()
-        return ClassName.bestGuess(annotationValue.value.toString())
+
+
+        val value = annotationValue.value as TypeMirror
+        require(typeUtil.isValidProxy(value)) { "Type $value is not a valid proxy" }
+
+        return ClassName.bestGuess(value.toString())
     }
 }
 

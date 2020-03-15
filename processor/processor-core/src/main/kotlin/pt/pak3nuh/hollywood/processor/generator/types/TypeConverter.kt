@@ -1,4 +1,4 @@
-package pt.pak3nuh.hollywood.processor.generator
+package pt.pak3nuh.hollywood.processor.generator.types
 
 import com.squareup.kotlinpoet.ARRAY
 import com.squareup.kotlinpoet.BOOLEAN
@@ -29,7 +29,6 @@ import com.squareup.kotlinpoet.WildcardTypeName
 import com.squareup.kotlinpoet.asClassName
 import com.squareup.kotlinpoet.asTypeName
 import com.squareup.kotlinpoet.asWildcardTypeName
-import javax.lang.model.element.Element
 import javax.lang.model.element.TypeElement
 import javax.lang.model.type.ArrayType
 import javax.lang.model.type.DeclaredType
@@ -68,11 +67,6 @@ class TypeConverter {
         val visitor = Visitor()
         typeMirror.accept(visitor, null)
         return visitor.typeName
-    }
-
-    fun convert(typeElement: Element): TypeName {
-        // converts to mirrors because of better generic support
-        return convert(typeElement.asType())
     }
 
     private inner class Visitor : AbstractTypeVisitor8<Unit, Unit?>() {

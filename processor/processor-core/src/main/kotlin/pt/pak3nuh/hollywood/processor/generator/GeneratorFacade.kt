@@ -1,7 +1,9 @@
 package pt.pak3nuh.hollywood.processor.generator
 
 import pt.pak3nuh.hollywood.processor.Actor
-import pt.pak3nuh.hollywood.processor.generator.context.GenerationContext
+import pt.pak3nuh.hollywood.processor.generator.context.GenerationContextImpl
+import pt.pak3nuh.hollywood.processor.generator.types.TypeConverter
+import pt.pak3nuh.hollywood.processor.generator.types.TypeUtilImpl
 import pt.pak3nuh.hollywood.processor.generator.util.Logger
 import java.nio.file.Paths
 import javax.annotation.processing.AbstractProcessor
@@ -26,17 +28,21 @@ class GeneratorFacade : AbstractProcessor() {
         val destinationFolder: String = processingEnv.options["kapt.kotlin.generated"]
                 ?: error("Generated source folder is mandatory")
 
-        generateFiles(roundEnv.getElementsAnnotatedWith(actorAnnotation), destinationFolder)
-
-        return true
+        try {
+            generateFiles(roundEnv.getElementsAnnotatedWith(actorAnnotation), destinationFolder)
+            return true
+        } catch (ex: Exception) {
+            logger.logError(ex)
+            throw ex
+        }
     }
 
     private fun generateFiles(annotatedElements: Set<Element>, destinationFolder: String) {
-        val ctx = GenerationContext(logger, processingEnv.typeUtils, processingEnv.elementUtils)
-        val typeConverter = TypeConverter()
-        val methodGenerator = MethodGenerator(typeConverter)
+        val typeUtil = TypeUtilImpl(logger, processingEnv.typeUtils, processingEnv.elementUtils, TypeConverter())
+        val ctx = GenerationContextImpl(logger, typeUtil)
+        val methodGenerator = MethodGenerator()
         val generators = sequenceOf<FileGenerator>(
-                ActorProxyGenerator(processingEnv.elementUtils, methodGenerator),
+                ActorProxyGenerator(methodGenerator),
                 ActorFactoryGenerator()
         )
         annotatedElements.asSequence()

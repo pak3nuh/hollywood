@@ -35,7 +35,6 @@ class MethodGenerator : MethodElementVisitor() {
                 }
                 .toList()
 
-        // todo doc generic methods not supported by design
         val builder = FunSpec.builder(methodName)
                 .addModifiers(KModifier.OVERRIDE, KModifier.SUSPEND)
                 .returns(context.typeUtil.convert(returnType))

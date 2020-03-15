@@ -64,4 +64,5 @@ Please note that the properties are only available until the system is fully bui
 
 For more detailed documentation
 
-- [Processor](./doc/Processor.md)
+- [Actor Lifecycle](doc/ActorLifecycle.md)
+- [Processor](doc/Processor.md)

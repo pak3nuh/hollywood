@@ -13,60 +13,62 @@ import javax.lang.model.type.TypeMirror
 
 class TypeElementStub(private val kind: ElementKind): TypeElement {
     override fun getModifiers(): MutableSet<Modifier> {
-        TODO("Not yet implemented")
+        unsupported()
     }
 
     override fun getSimpleName(): Name {
-        TODO("Not yet implemented")
+        unsupported()
     }
 
     override fun getKind(): ElementKind = kind
 
     override fun asType(): TypeMirror {
-        TODO("Not yet implemented")
+        unsupported()
     }
 
     override fun getSuperclass(): TypeMirror {
-        TODO("Not yet implemented")
+        unsupported()
     }
 
     override fun getTypeParameters(): MutableList<out TypeParameterElement> {
-        TODO("Not yet implemented")
+        unsupported()
     }
 
     override fun getQualifiedName(): Name {
-        TODO("Not yet implemented")
+        unsupported()
     }
 
     override fun getEnclosingElement(): Element {
-        TODO("Not yet implemented")
+        unsupported()
     }
 
     override fun getInterfaces(): MutableList<out TypeMirror> {
-        TODO("Not yet implemented")
+        unsupported()
     }
 
     override fun <R : Any?, P : Any?> accept(v: ElementVisitor<R, P>?, p: P): R {
-        TODO("Not yet implemented")
+        unsupported()
     }
 
     override fun <A : Annotation?> getAnnotationsByType(annotationType: Class<A>?): Array<A> {
-        TODO("Not yet implemented")
+        unsupported()
     }
 
     override fun <A : Annotation?> getAnnotation(annotationType: Class<A>?): A {
-        TODO("Not yet implemented")
+        unsupported()
     }
 
     override fun getNestingKind(): NestingKind {
-        TODO("Not yet implemented")
+        unsupported()
     }
 
     override fun getAnnotationMirrors(): MutableList<out AnnotationMirror> {
-        TODO("Not yet implemented")
+        unsupported()
     }
 
     override fun getEnclosedElements(): MutableList<out Element> {
-        TODO("Not yet implemented")
+        unsupported()
     }
+    
+    private fun unsupported(): Nothing = throw UnsupportedOperationException()
 }

@@ -47,7 +47,6 @@ import javax.lang.model.util.AbstractTypeVisitor8
 
 class TypeConverter {
 
-    // todo document available mappings
     private val kotlinConversionMap = mapOf<String, ClassName>(
             // immutable because the contents shouldn't change between calls
             "java.util.List" to LIST,

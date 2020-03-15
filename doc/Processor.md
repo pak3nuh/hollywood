@@ -1,24 +1,125 @@
+# Annotation processor
+
+The annotation processor exists to ease the pain of the boilerplate around creating the proxies
+and factories required to work with the system.
+
+To work with it just annotate an interface with `@Actor` and it will generate code for the proxy
+and actor factory base classes. While the proxy usually is fully transparent to the user,
+the actor factory can be used as a base interface that contains all the required peaces to
+use on the system, leaving the user to write just the factory methods for the actor implementation.
+
+```kotlin
+@Actor
+interface Greeter {
+    suspend fun greet(name: String): String
+}
+
+@Generated("2020-03-15T15:18:15.582Z")
+interface GreeterBaseFactory : ActorFactory<Greeter, GreeterProxy> {
+  override val actorKClass: KClass<Greeter>
+    get() = Greeter::class
+  override val proxyKClass: KClass<GreeterProxy>
+    get() = GreeterProxy::class
+  override fun createProxy(delegate: Greeter, config: ProxyConfiguration): GreeterProxy =
+      GreeterProxy(delegate, config)
+}
+
+@Generated("2020-03-15T15:18:15.582Z")
+class GreeterProxy(
+  delegate: Greeter,
+  config: ProxyConfiguration
+) : ActorProxyBase<Greeter>(delegate, config), Greeter {
+  // delegate calls
+}
+```
+
+## Custom actor proxy
+
+For certain cases it may be useful to use a custom proxy, for example, to do additional logging.
+
+It is possible to specify the proxy class on the actor annotation like
+```kotlin
+@Actor(CustomProxy::class)
+interface Greeter {
+    suspend fun greet(name: String): String
+}
+
+@Generated("2020-03-15T15:18:15.582Z")
+class GreeterProxy(
+  delegate: Greeter,
+  config: ProxyConfiguration
+) : CustomProxy<Greeter>(delegate, config), Greeter {
+  // delegate calls
+}
+```
+
+There are some constraints for this, please see [bellow](#Constraints)
+
 ## Constraints
 
-Only interfaces can be annotated with `@Actor`.
-In order to allow class hierarchies, different proxies need to be issued and this increases project
-complexity for little (and convoluted) gain.
+These constraints reflect the current status of the project and may change in the future.
 
+#### Suspend everywhere
+
+All methods of an actor must be **suspendable**. This is because an actor will work with
+mailboxes, serialization, possibly network and those are inheritably async in nature.
+
+This should be expected because actor communication is message based and the actor model
+gives the guarantee that only one message is processed at any time.
+
+Currently `kotlin` doesn't support `suspend` properties, but they can be easily modeled as functions.
+
+#### Only interfaces can be annotated with `@Actor`.
+
+This is because in order to allow class 
+hierarchies, different proxies need to be issued and this increases project
+complexity for little (and convoluted) gain.
 Although is possible to create actors manually that don't use interfaces but a class hierarchy.
+
+#### Not all kotlin types are supported
+Because this is a `java` annotation processor, the `kotlin` compiler will issue `elements` native
+to the `JDK` ecosystem. This means that the opposite process must exist, transforming `java` 
+elements into `kotlin` types.
+
+Since there is no such mechanism provided by the `kotlin` ecosystem, it was chosen to support
+only a subset of those translations. This subset tries to provide just the basic blocks needed
+without having to create a new type for the interaction.
+
+The subset is in this [file](../processor/processor-core/src/main/kotlin/pt/pak3nuh/hollywood/processor/generator/types/TypeConverter.kt)
+and they are roughly:
+- Primitives
+- Arrays
+- List, Set, Map
+
+Despite not being the current case, the possibility for inter-process communication is
+kept intentionally open.
+
+#### Generic methods and actors not supported
+
+An actor is a very well defined entity and generics would blur its purpose.
+
+Keeping actors free of generics simplifies greatly code generation logic and helps to maintain
+a clear image of the actor purpose.
+
+### Custom proxies
+
+Custom proxies are a work in progress and may change or be deprecated in the future.
+
+Any custom proxy must comply with
+- Extend ActorProxyBase
+- Be an open class
+- Expose a compatible constructor that receives a delegate and a config parameter
+
+The only reason why is forced to extend `ActorProxyBase` is because the generated proxies
+will use functionalities present in this class. It is safer to extend the class instead of
+maintaining some brittle naming contract.
+
+Some of this restriction apply in different phases. Some will break the annotation processor,
+others will break on the kotlin compilation phase.
 
 ## Proxy structure
 
-Proxy capabilities can be made by interface composition. This leverages the 
-kotlin compiler capabilities and forces no type hierarchy.
+Proxies are just dumb delegators and will only contain the required connection code to work
+with the base proxy.
 
-A base implementation for a proxy can be a class for convenience. It can later
-be extracted to an interface if needed.
-
-```kotlin
-class GreeterProxy(
-    delegate: Greeter,
-    config: ProxyConfiguration
-) : BaseProxy(),
-    UnknownMessageHandler by handleUnknownMessages(config),
-    RecoveryHandler by handleErrors(config)
-```
+The separation of concerns isn't done on the proxy itself to allow custom proxies to be flexible.

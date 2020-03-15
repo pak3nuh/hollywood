@@ -1,5 +1,8 @@
 package pt.pak3nuh.hollywood.processor
 
+import pt.pak3nuh.hollywood.actor.proxy.ActorProxyBase
+import kotlin.reflect.KClass
+
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.SOURCE)
 /**
@@ -19,5 +22,9 @@ package pt.pak3nuh.hollywood.processor
  * It is possible to follow a different structure than this, but it may fail in unexpected ways. Each version
  * of the system may impose different restrictions that can break existing use cases.
  * If the above structure is followed, code shouldn't break just by bumping versions.
+ * @param value The base **open** class of the actor proxy. It is highly recommended to extend [ActorProxyBase] because the
+ * generated proxy classes may require some features defined there.
+ *
+ * **Custom proxies are currently considered experimental and may change in the future.**
  */
-annotation class Actor
+annotation class Actor(val value: KClass<*> = ActorProxyBase::class)

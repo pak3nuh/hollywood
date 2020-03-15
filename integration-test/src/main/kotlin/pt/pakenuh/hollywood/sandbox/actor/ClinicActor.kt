@@ -2,7 +2,8 @@ package pt.pakenuh.hollywood.sandbox.actor
 
 import kotlinx.coroutines.CompletableJob
 import kotlinx.coroutines.Job
-import pt.pak3nuh.hollywood.actor.proxy.ActorProxy
+import pt.pak3nuh.hollywood.actor.proxy.ActorProxyBase
+import pt.pak3nuh.hollywood.actor.proxy.ProxyConfiguration
 import pt.pak3nuh.hollywood.processor.Actor
 import pt.pak3nuh.hollywood.system.ActorSystem
 import pt.pakenuh.hollywood.sandbox.Loggers
@@ -18,7 +19,9 @@ import pt.pakenuh.hollywood.sandbox.pet.Pet
 import pt.pakenuh.hollywood.sandbox.pet.PetId
 import pt.pakenuh.hollywood.sandbox.vet.Vet
 
-@Actor
+open class CustomProxy<T>(delegate: T, config: ProxyConfiguration) : ActorProxyBase<T>(delegate, config)
+
+@Actor(CustomProxy::class)
 interface ClinicActor {
     suspend fun checkinPet(pet: Pet, contacts: OwnerContacts)
     suspend fun checkoutPet(petId: PetId, creditCard: CreditCard): Receipt
@@ -35,10 +38,7 @@ interface ClinicActor {
     }
 }
 
-class ClinicProxy(override val delegate: ClinicActor, override val actorId: String) : ActorProxy<ClinicActor>, ClinicActor by delegate
-
-class ClinicFactory(private val vets: List<Vet>, private val actors: ClinicActors) :
-        FactoryBase<ClinicActor, ClinicProxy>(ClinicActor::class, ClinicProxy::class, ::ClinicProxy) {
+class ClinicFactory(private val vets: List<Vet>, private val actors: ClinicActors) : ClinicActorBaseFactory {
     fun createClinic(): ClinicActor = ClinicActorImpl(vets, actors)
 }
 

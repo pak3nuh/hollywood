@@ -2,19 +2,24 @@ package pt.pak3nuh.hollywood.gradle
 
 object Versions {
     // plugin versions must be changed inline
-    val kotlin = "1.3.61"
+    val kotlin = "1.3.70"
     val junit = "5.6.0"
     val assertK = "0.20"
-    val coroutines = "1.3.3"
+    val coroutines = "1.3.4"
+    val mockk = "1.9.3"
 }
 
 object Dependencies {
+    val kotlinPoet = "com.squareup:kotlinpoet:1.5.0"
     val kotlinCoroutines = kotlinx("kotlinx-coroutines-core", Versions.coroutines)
+
+    // todo as of kotiln 1.3.70 this may not be needed
     val kotlinReflect = kotlin("reflect", Versions.kotlin)
     val kotlinStdLib = kotlin("stdlib-jdk8", Versions.kotlin)
     val junitApi = junitJupiter("api", Versions.junit)
     val junitEngine = junitJupiter("engine", Versions.junit)
     val assertK = "com.willowtreeapps.assertk:assertk-jvm:${Versions.assertK}"
+    val mockk = "io.mockk:mockk:${Versions.mockk}"
 }
 
 private fun kotlinx(name: String, version: String) = "org.jetbrains.kotlinx:$name:$version"

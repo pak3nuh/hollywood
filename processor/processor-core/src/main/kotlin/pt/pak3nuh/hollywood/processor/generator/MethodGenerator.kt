@@ -5,6 +5,7 @@ import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.ParameterSpec
 import pt.pak3nuh.hollywood.processor.generator.context.GenerationContext
+import pt.pak3nuh.hollywood.processor.generator.types.TypeUtil
 import pt.pak3nuh.hollywood.processor.visitor.MethodElementVisitor
 import javax.lang.model.element.ElementVisitor
 import javax.lang.model.element.ExecutableElement
@@ -26,9 +27,14 @@ class MethodGenerator : MethodElementVisitor() {
         context.logger.logInfo("Building method $methodName")
         context.logger.logDebug("Checking is suspend")
         val returnType = checkIsSuspend(method.parameters, method.returnType, context)
+        checkNotActor(context.typeUtil, returnType)
 
         val parameterSpecs = method.parameters.asSequence()
                 .filter { !context.typeUtil.isAssignableCoroutine(it.asType()) }
+                .onEach {
+                    val variableType = it.asType()
+                    checkNotActor(context.typeUtil, variableType)
+                }
                 .map {
                     ParameterSpec.builder(it.simpleName.toString(), context.typeUtil.convert(it))
                             .build()
@@ -42,6 +48,10 @@ class MethodGenerator : MethodElementVisitor() {
                 .addCode(buildDelegateCall(context, methodName, returnType, parameterSpecs))
 
         return MethodResult(builder.build())
+    }
+
+    private fun checkNotActor(typeUtil: TypeUtil, variableType: TypeMirror) {
+        check(!typeUtil.isActor(variableType)) { "Actors aren't allowed on parameters nor return types" }
     }
 
     private fun buildDelegateCall(context: GenerationContext, methodName: String, returnType: TypeMirror, parameterSpecs: List<ParameterSpec>): CodeBlock {

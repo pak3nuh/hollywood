@@ -2,11 +2,14 @@ package pt.pak3nuh.hollywood.processor.generator.types
 
 import com.squareup.kotlinpoet.TypeName
 import pt.pak3nuh.hollywood.actor.proxy.ActorProxyBase
+import pt.pak3nuh.hollywood.processor.Actor
 import pt.pak3nuh.hollywood.processor.generator.util.Logger
 import javax.lang.model.element.AnnotationMirror
 import javax.lang.model.element.AnnotationValue
 import javax.lang.model.element.Element
 import javax.lang.model.element.ExecutableElement
+import javax.lang.model.element.TypeElement
+import javax.lang.model.type.DeclaredType
 import javax.lang.model.type.TypeMirror
 import javax.lang.model.type.WildcardType
 import javax.lang.model.util.Elements
@@ -25,6 +28,7 @@ interface TypeUtil {
     fun convert(typeMirror: TypeMirror): TypeName
     fun convert(element: Element): TypeName = convert(element.asType())
     fun isValidProxy(typeMirror: TypeMirror): Boolean
+    fun isActor(typeMirror: TypeMirror): Boolean
 }
 
 class TypeUtilImpl(
@@ -39,6 +43,8 @@ class TypeUtilImpl(
      * Type to check if another type is a coroutine
      */
     private val continuationType = buildCoroutineType()
+
+    private val annotationTypeMirror = getTypeMirror(Actor::class.java)
 
     /**
      * Type returned at the bytecode level
@@ -67,6 +73,17 @@ class TypeUtilImpl(
     }
 
     override fun isValidProxy(typeMirror: TypeMirror): Boolean = isAssignable(typeMirror, customProxy)
+
+    override fun isActor(typeMirror: TypeMirror): Boolean {
+        // the usage class or interface
+        val declaredType = typeMirror as? DeclaredType
+        // the declaration type
+        val typeElement = declaredType?.asElement() as? TypeElement
+
+        return typeElement?.annotationMirrors?.any {
+            types.isSameType(it.annotationType, annotationTypeMirror)
+        } ?: false
+    }
 
     private fun getTypeMirror(clazz: Class<*>): TypeMirror = elements.getTypeElement(clazz.canonicalName).asType()
 

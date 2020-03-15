@@ -101,6 +101,14 @@ An actor is a very well defined entity and generics would blur its purpose.
 Keeping actors free of generics simplifies greatly code generation logic and helps to maintain
 a clear image of the actor purpose.
 
+#### Actors can't be used as parameters
+
+One of the design decisions was that was to emulate simple synchronous method calls. This should
+remove any need to pass actors around for most cases because they can return values.
+
+If for some reason it is necessary to pass information about a specific actor, then one should
+pass it's identifier to obtain the correct actor instance. 
+
 ### Custom proxies
 
 Custom proxies are a work in progress and may change or be deprecated in the future.

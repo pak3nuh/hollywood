@@ -2,9 +2,12 @@
 
 A minimalistic type safe actor based framework built with and for Kotlin.
 
-This project leverages several technologies to provide an easier way to handle concurrent programing. It does not intend to be fully compliant with all the requirements of the actor model, just borrows some of it's main ideas.
+This project leverages several technologies to provide an easier way to handle concurrent programing. 
+It does not intend to be fully compliant with all the requirements of the actor model, just borrows some of it's main ideas.
 
-It is also not a requirement to design against a multi clustered implementation. This is a next level problem that requires some complicated guarantees like ensuring an actor is not created on multiple clusters. The current design should work on a single machine in order to facilitate some of the work required.
+It is also not a requirement to design against a multi clustered implementation. 
+This is a next level problem that requires some complicated guarantees like ensuring an actor is not created on multiple clusters. 
+The current design should work on a single machine in order to facilitate some of the work required.
 
 **Disclaimer: Just a PoC at this stage**
 
@@ -32,9 +35,33 @@ val actorSystem = SystemBuilder()
 
 ### Create actors
 
+First define an actor, annotate it accordingly and implement it:
+```kotlin
+@Actor
+interface Vet {
+    suspend fun checkPet(pet: Pet): CheckResult
+}
+
+class MyVet: Vet {
+    override suspend fun checkPet(pet: Pet): CheckResult {
+        ...
+    }
+}
+```
+
+Once compilation kicks in a proxy class and a factory interface will be generated. Generated type names are the
+actor FQCN sufixed by `Proxy` and `FactoryBase`.
+
+Then implement a factory that provides instances of the actor implementation:
+```kotlin
+class VetFactory: VetBaseFactory {
+    fun createVet(): Vet = MyVet()
+}
+```
+
 Once the system is build is possible to create actor instances
 ```kotlin
-val actor = actorSystem.factoryRepository.getOrCreateActor(ClinicFactory::class) { factory ->
+val actor = actorSystem.factoryRepository.getOrCreateActor(VetFactory::class) { factory ->
     factory.createVet()
 }
 actor.sayHello()

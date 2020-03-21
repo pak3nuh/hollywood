@@ -4,4 +4,5 @@ dependencies {
     implementation(project(":api"))
     implementation(Dependencies.kotlinReflect)
     implementation(Dependencies.kotlinCoroutines)
+    implementation(Dependencies.kryo)
 }

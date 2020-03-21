@@ -1,12 +1,13 @@
 package pt.pak3nuh.hollywood.gradle
 
-object Versions {
+private object Versions {
     // plugin versions must be changed inline
     val kotlin = "1.3.70"
     val junit = "5.6.0"
     val assertK = "0.20"
     val coroutines = "1.3.4"
     val mockk = "1.9.3"
+    val kryo = "5.0.0-RC5"
 }
 
 object Dependencies {
@@ -20,6 +21,7 @@ object Dependencies {
     val junitEngine = junitJupiter("engine", Versions.junit)
     val assertK = "com.willowtreeapps.assertk:assertk-jvm:${Versions.assertK}"
     val mockk = "io.mockk:mockk:${Versions.mockk}"
+    val kryo = "com.esotericsoftware:kryo:${Versions.kryo}"
 }
 
 private fun kotlinx(name: String, version: String) = "org.jetbrains.kotlinx:$name:$version"

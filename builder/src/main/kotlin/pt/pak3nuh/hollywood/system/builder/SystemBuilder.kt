@@ -7,6 +7,7 @@ import pt.pak3nuh.hollywood.system.ActorSystem
 import pt.pak3nuh.hollywood.system.AnyActorFactory
 import pt.pak3nuh.hollywood.system.FactoryRepositoryImpl
 import pt.pak3nuh.hollywood.system.SystemImpl
+import pt.pak3nuh.hollywood.system.actor.message.serializer.buildStrategy
 import kotlin.reflect.KClass
 import kotlin.reflect.full.isSubclassOf
 
@@ -55,7 +56,7 @@ class SystemBuilder {
         check(factoryBuilderMap.isNotEmpty()) { "There must be at least one actor factory" }
 
         val factoryMap = mutableMapOf<KClass<out AnyActorFactory>, AnyActorFactory>()
-        val actorSystem = SystemImpl(ActorManagerImpl(FactoryRepositoryImpl(factoryMap)))
+        val actorSystem = SystemImpl(ActorManagerImpl(FactoryRepositoryImpl(factoryMap), buildStrategy()))
         var systemBuilt = false
 
         val buildProperties = buildProperties.mapValues { it.value(actorSystem) }

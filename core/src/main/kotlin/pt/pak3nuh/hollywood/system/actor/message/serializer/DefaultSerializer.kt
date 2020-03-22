@@ -10,6 +10,7 @@ import pt.pak3nuh.hollywood.actor.message.ByteParameter
 import pt.pak3nuh.hollywood.actor.message.DoubleParameter
 import pt.pak3nuh.hollywood.actor.message.FloatParameter
 import pt.pak3nuh.hollywood.actor.message.IntParameter
+import pt.pak3nuh.hollywood.actor.message.KClassMetadata
 import pt.pak3nuh.hollywood.actor.message.LongParameter
 import pt.pak3nuh.hollywood.actor.message.Message
 import pt.pak3nuh.hollywood.actor.message.Parameter
@@ -26,6 +27,7 @@ internal class DefaultSerializer {
         // First tries reflection, then gets creative with objenesis
         serializer.instantiatorStrategy = DefaultInstantiatorStrategy(StdInstantiatorStrategy())
         serializer.register(InternalMessage::class.java)
+        serializer.register(ArrayList::class.java)
         serializer.register(ReferenceParameter::class.java)
         serializer.register(BooleanParameter::class.java)
         serializer.register(ByteParameter::class.java)
@@ -37,19 +39,21 @@ internal class DefaultSerializer {
     }
 
     fun serialize(message: Message): ByteArray {
-        val internalMessage = InternalMessage(message.functionId, message.parameters)
-        registerParameters(message.parameters)
+        registerParameterClasses(message.parameters)
+        val internalMessage = InternalMessage.from(message)
         val output = Output(ByteArrayOutputStream())
         serializer.writeObject(output, internalMessage)
         return output.toBytes()
     }
 
-    private fun registerParameters(parameters: List<Parameter>) {
+    private fun registerParameterClasses(parameters: List<Parameter>) {
         serializer.register(parameters.javaClass)
         parameters.asSequence()
                 .filterIsInstance<ReferenceParameter>()
+                .mapNotNull { it.metadata }
+                .filterIsInstance<KClassMetadata>()
                 .forEach {
-                    serializer.register(it.value.javaClass)
+                    serializer.register(it.kClass.java)
                 }
     }
 
@@ -58,4 +62,14 @@ internal class DefaultSerializer {
     }
 }
 
-internal data class InternalMessage(val functionId: String, val parameters: List<Parameter>) : Serializable
+internal data class InternalMessage constructor(val functionId: String, val parameters: ArrayList<Parameter>) : Serializable {
+    companion object {
+        fun from(message: Message): InternalMessage {
+            val noMetadataParameters = message.parameters.mapTo(ArrayList()) {
+                if (it is ReferenceParameter) ReferenceParameter(it.name, it.value, null)
+                else it
+            }
+            return InternalMessage(message.functionId, noMetadataParameters)
+        }
+    }
+}

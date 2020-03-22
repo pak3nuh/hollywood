@@ -21,6 +21,8 @@ interface TypeMappingActor {
             wrappedBooleanArray: Array<Boolean>
     )
 
+    suspend fun multiDimensionalArrays(string: Array<Array<String>>, int: Array<IntArray>, long: Array<LongArray>)
+
     suspend fun usualCollectionTypes(
             list: List<String>, set: Set<String>, map: Map<String, String>
     )

@@ -1,6 +1,7 @@
 package pt.pak3nuh.hollywood.actor.message
 
 import kotlinx.coroutines.CompletableDeferred
+import kotlin.reflect.KClass
 
 interface Message {
     val functionId: String
@@ -8,20 +9,20 @@ interface Message {
     val returnValue: CompletableDeferred<ReturnValue>
 }
 
-sealed class Parameter {
-    abstract val name: String
+interface MessageBuilder {
+    fun parameters(block: ParameterScope.() -> Unit): MessageBuilder
+    fun build(functionName: String): Message
 }
 
-data class ReferenceParameter(override val name: String, val value: Any): Parameter()
-data class BooleanParameter(override val name: String, val value: Boolean): Parameter()
-data class ByteParameter(override val name: String, val value: Byte): Parameter()
-data class ShortParameter(override val name: String, val value: Short): Parameter()
-data class IntParameter(override val name: String, val value: Int): Parameter()
-data class LongParameter(override val name: String, val value: Long): Parameter()
-data class FloatParameter(override val name: String, val value: Float): Parameter()
-data class DoubleParameter(override val name: String, val value: Double): Parameter()
+interface ParameterScope {
+    fun param(name: String, kClass: KClass<*>, value: Any?)
+    fun param(name: String, value: Any) = param(name, value::class, value)
+    fun param(name: String, value: Byte)
+    fun param(name: String, value: Boolean)
+    fun param(name: String, value: Short)
+    fun param(name: String, value: Int)
+    fun param(name: String, value: Long)
+    fun param(name: String, value: Float)
+    fun param(name: String, value: Double)
+}
 
-sealed class ReturnValue
-object UnitReturn: ReturnValue()
-data class ObjectReturn(val value: Any): ReturnValue()
-data class ExceptionReturn(val exception: Exception): ReturnValue()

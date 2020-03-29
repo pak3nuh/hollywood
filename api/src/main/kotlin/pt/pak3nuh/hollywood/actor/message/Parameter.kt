@@ -12,7 +12,7 @@ data class ReferenceParameter(
         val metadata: ReferenceMetadata?
 ): Parameter() {
     constructor(name: String, value: Any): this(name, value::class, value)
-    constructor(name: String, kclass: KClass<*>, value: Any?): this(name, value, KClassMetadata(kclass))
+    constructor(name: String, kclass: KClass<*>, value: Any?): this(name, value, KClassMetadataImpl(kclass))
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

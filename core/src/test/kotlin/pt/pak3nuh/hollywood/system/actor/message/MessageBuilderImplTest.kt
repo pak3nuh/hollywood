@@ -29,7 +29,7 @@ internal class MessageBuilderImplTest {
     @Test
     internal fun `should retain parameter order`() {
         val message = builder.parameters {
-            param("p1", "reference")
+            param("p1", "reference", false)
             param("p2", 1.toByte())
             param("p3", true)
             param("p4", 2.toShort())
@@ -46,7 +46,7 @@ internal class MessageBuilderImplTest {
                 BooleanParameter("p3", true),
                 ShortParameter("p4", 2),
                 IntParameter("p5", 3),
-                LongParameter("p6",4),
+                LongParameter("p6", 4),
                 FloatParameter("p7", 5F),
                 DoubleParameter("p8", 6.0)
         )
@@ -65,10 +65,10 @@ internal class MessageBuilderImplTest {
     @Test
     internal fun `should concatenate parameters on multiple calls`() {
         builder.parameters {
-            param("p1", "p1")
+            param("p1", "p1", false)
         }
         builder.parameters {
-            param("p2", "p2")
+            param("p2", "p2", false)
         }
         val message = builder.build("id")
         assertThat(message.parameters).containsExactly(
@@ -77,4 +77,36 @@ internal class MessageBuilderImplTest {
         )
     }
 
+    @Test
+    internal fun `should not allow arrays on reference params`() {
+        assertThrows<IllegalArgumentException> {
+            builder.parameters {
+                param("p1", arrayOf(""), false)
+            }
+        }
+    }
+
+    @Test
+    fun `should build an array matrix`() {
+        val message = builder.parameters {
+            arrayParam("p1", Int::class, null, false, false, false, false)
+        }.build("id")
+        assertThat(message.functionId).isEqualTo("id:[[[Lkotlin.Int]]]")
+    }
+
+    @Test
+    fun `should capture nullable arrays`() {
+        val message = builder.parameters {
+            arrayParam("p1", Int::class, null, true, false, true, false, true)
+        }.build("id")
+        assertThat(message.functionId).isEqualTo("id:[[[[Lkotlin.Int?]]?]]?")
+    }
+
+    @Test
+    internal fun `should work with primitive arrays`() {
+        val message = builder.parameters {
+            arrayParam("p1", Int::class, intArrayOf(1), true, false)
+        }.build("id")
+        assertThat(message.functionId).isEqualTo("id:[Lkotlin.Int]?")
+    }
 }

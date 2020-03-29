@@ -6,11 +6,13 @@ import kotlin.reflect.KClass
  * Separate interface to allow for extensibility.
  * Some metadata may be switched to a more friendly serializable format.
  */
-interface ReferenceMetadata {
-    val jvmClassName: String
+interface ReferenceMetadata
+
+interface KClassMetadata: ReferenceMetadata {
+    val kClass: KClass<*>
 }
 
-data class KClassMetadata(override val jvmClassName: String, val kClass: KClass<*>) : ReferenceMetadata {
+data class KClassMetadataImpl(val jvmClassName: String, override val kClass: KClass<*>) : KClassMetadata {
     constructor(kClass: KClass<*>): this(jvmClassName(kClass), kClass)
 }
 

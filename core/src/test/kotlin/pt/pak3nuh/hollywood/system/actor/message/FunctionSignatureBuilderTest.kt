@@ -68,4 +68,14 @@ internal class FunctionSignatureBuilderTest {
             builder.build("")
         }
     }
+
+    @Test
+    internal fun `should only allow call component or nest`() {
+        assertThrows<IllegalStateException> {
+            builder.addArray {
+                nest(false) {}
+                component(Int::class, false)
+            }
+        }
+    }
 }

@@ -63,19 +63,28 @@ internal class FunctionSignatureBuilder {
         fun nest(isNull: Boolean, nesting: (NestingScope.() -> Unit))
     }
 
-    private class Scope: NestingScope {
+    private class Scope : NestingScope {
 
         var componentString: String = arrayString(false, referenceString(false, Any::class))
-        private var nestCalled = false
+        private var scopeUsed = false
 
         override fun component(kClass: KClass<*>, isNull: Boolean) {
-            componentString = referenceString(isNull, kClass)
+            componentString = useScope {
+                referenceString(isNull, kClass)
+            }
         }
 
         override fun nest(isNull: Boolean, nesting: (NestingScope.() -> Unit)) {
-            check(!nestCalled) { "Nest can only be called once per scope" }
-            componentString = arrayString(isNull, Scope().apply(nesting).componentString)
-            nestCalled = true
+            componentString = useScope {
+                arrayString(isNull, Scope().apply(nesting).componentString)
+            }
+        }
+
+        private inline fun useScope(block: () -> String): String {
+            check(!scopeUsed) { "A scope can only be used once either by nest or component" }
+            val ret = block()
+            scopeUsed = true
+            return ret
         }
 
     }

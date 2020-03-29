@@ -27,6 +27,7 @@ internal class DefaultSerializer {
         // First tries reflection, then gets creative with objenesis
         serializer.instantiatorStrategy = DefaultInstantiatorStrategy(StdInstantiatorStrategy())
         serializer.register(InternalMessage::class.java)
+        // for no metadata parameters
         serializer.register(ArrayList::class.java)
         serializer.register(ReferenceParameter::class.java)
         serializer.register(BooleanParameter::class.java)

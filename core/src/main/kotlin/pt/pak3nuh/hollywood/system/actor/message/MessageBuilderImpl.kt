@@ -37,9 +37,29 @@ private class Scope(private val functionSignatureBuilder: FunctionSignatureBuild
     val parameterList: List<Parameter>
         get() = parameters.toList()
 
-    override fun param(name: String, kClass: KClass<*>, value: Any?) {
+    override fun param(name: String, kClass: KClass<*>, isNull: Boolean, value: Any?) {
+        val clazz = kClass.java
+        require(!clazz.isArray) { "Argument is an array, please use the [arrayParam]" }
         addParameter(ReferenceParameter(name, kClass, value))
-        functionSignatureBuilder.addReference(kClass, value == null)
+        functionSignatureBuilder.addReference(kClass, isNull)
+    }
+
+    override fun arrayParam(name: String, component: KClass<*>, value: Any?, nullable: BooleanArray) {
+        require(nullable.size >= 2) { "Nullable must contain at least the array and component null values" }
+        addParameter(ReferenceParameter(name, value, ArrayMetadata(component)))
+        functionSignatureBuilder.addArray {
+            nestParams(nullable.toList(), component)
+        }
+    }
+
+    private fun FunctionSignatureBuilder.NestingScope.nestParams(nullable: List<Boolean>, componentCls: KClass<*>) {
+        if (nullable.size == 1) {
+            component(componentCls, nullable.first())
+        } else {
+            nest(nullable.first()) {
+                nestParams(nullable.subList(1, nullable.size), componentCls)
+            }
+        }
     }
 
     override fun param(name: String, value: Byte) {

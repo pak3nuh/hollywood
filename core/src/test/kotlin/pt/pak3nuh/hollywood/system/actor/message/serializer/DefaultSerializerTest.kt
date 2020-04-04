@@ -54,14 +54,14 @@ internal class DefaultSerializerTest {
         val copy = serde(testMessage)
         assertThat(copy.parameters[0])
                 .isInstanceOf(ReferenceParameter::class)
-                .transform { it.value }
+                .transform { it.value!! }
                 .isInstanceOf(IntArray::class)
                 .containsExactly(*expected)
     }
 
     private fun assertEquivalent(testMessage: TestMessage, copy: TestMessage) {
-        assertThat(testMessage).isEqualTo(copy)
         assertThat(testMessage).isNotSameAs(copy)
+        assertThat(testMessage).isEqualTo(copy)
     }
 
     private fun serde(testMessage: TestMessage): TestMessage {

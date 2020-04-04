@@ -1,5 +1,6 @@
 package pt.pak3nuh.hollywood.actor.proxy
 
+import pt.pak3nuh.hollywood.actor.message.MessageBuilder
 import pt.pak3nuh.hollywood.actor.message.serializer.Serializer
 import pt.pak3nuh.hollywood.processor.Actor
 
@@ -28,4 +29,5 @@ interface ActorProxy<T> {
 interface ProxyConfiguration {
     val actorId: String
     val serializer: Serializer
+    fun newMessageBuilder(): MessageBuilder
 }

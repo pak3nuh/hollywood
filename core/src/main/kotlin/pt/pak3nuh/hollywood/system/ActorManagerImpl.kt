@@ -1,9 +1,11 @@
 package pt.pak3nuh.hollywood.system
 
 import pt.pak3nuh.hollywood.actor.ActorFactory
+import pt.pak3nuh.hollywood.actor.message.MessageBuilder
 import pt.pak3nuh.hollywood.actor.message.serializer.Serializer
 import pt.pak3nuh.hollywood.actor.proxy.ActorProxy
 import pt.pak3nuh.hollywood.actor.proxy.ProxyConfiguration
+import pt.pak3nuh.hollywood.system.actor.message.createMessageBuilder
 import java.lang.ref.ReferenceQueue
 import java.lang.ref.WeakReference
 import java.util.UUID
@@ -104,6 +106,8 @@ class ActorManagerImpl(
 private class Configuration(private val internalActorId: InternalActorId, override val serializer: Serializer) : ProxyConfiguration {
     override val actorId: String
         get() = internalActorId.fullActorId
+
+    override fun newMessageBuilder(): MessageBuilder = createMessageBuilder()
 }
 
 private inline class InternalActorId(val fullActorId: String) {

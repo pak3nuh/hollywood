@@ -12,7 +12,7 @@ import com.squareup.kotlinpoet.asTypeName
 import pt.pak3nuh.hollywood.actor.ActorFactory
 import pt.pak3nuh.hollywood.actor.proxy.ProxyConfiguration
 import pt.pak3nuh.hollywood.processor.generator.context.GenerationContext
-import pt.pak3nuh.hollywood.processor.generator.context.buildGenerationAnnotation
+import pt.pak3nuh.hollywood.processor.generator.context.generationAnnotation
 import pt.pak3nuh.hollywood.processor.visitor.TypeElementVisitor
 import javax.lang.model.element.TypeElement
 import kotlin.reflect.KClass
@@ -42,7 +42,7 @@ class ActorFactoryGenerator : FileGenerator, TypeElementVisitor() {
                 .build()
 
         val classBuilder = TypeSpec.interfaceBuilder(factoryName)
-                .addAnnotation(context.buildGenerationAnnotation())
+                .addAnnotation(context.generationAnnotation())
                 .addProperty(actorKClassProp)
                 .addProperty(proxyKClassProp)
                 .addFunction(proxyCreator)

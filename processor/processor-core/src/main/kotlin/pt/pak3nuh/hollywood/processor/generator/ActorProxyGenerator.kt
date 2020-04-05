@@ -9,7 +9,8 @@ import com.squareup.kotlinpoet.asTypeName
 import pt.pak3nuh.hollywood.actor.proxy.ProxyConfiguration
 import pt.pak3nuh.hollywood.processor.Actor
 import pt.pak3nuh.hollywood.processor.generator.context.GenerationContext
-import pt.pak3nuh.hollywood.processor.generator.context.buildGenerationAnnotation
+import pt.pak3nuh.hollywood.processor.generator.context.generationAnnotation
+import pt.pak3nuh.hollywood.processor.generator.types.KotlinMetadata
 import pt.pak3nuh.hollywood.processor.generator.types.TypeUtil
 import pt.pak3nuh.hollywood.processor.visitor.TypeElementVisitor
 import javax.lang.model.element.ElementKind
@@ -17,17 +18,21 @@ import javax.lang.model.element.TypeElement
 import javax.lang.model.type.TypeMirror
 
 class ActorProxyGenerator(
-        private val methodGenerator: MethodVisitor
+        private val methodGenerator: MethodVisitor,
+        private val metadataExtractor: (TypeElement) -> KotlinMetadata
 ) : FileGenerator, TypeElementVisitor() {
 
     override fun generate(element: TypeElement, context: GenerationContext): SourceFile {
-        return visitType(element, context).toSourceFile()
+        require(element.kind == ElementKind.INTERFACE) {
+            "Actor annotation can only be used on interfaces"
+        }
+        context[KotlinMetadata] = metadataExtractor(element)
+        val sourceFile = visitType(element, context).toSourceFile()
+        context.remove(KotlinMetadata)
+        return sourceFile
     }
 
     override fun visitType(typeElement: TypeElement, context: GenerationContext): TypeResult {
-        require(typeElement.kind == ElementKind.INTERFACE) {
-            "Actor annotation can only be used on interfaces"
-        }
         val actorInterface = typeElement.asType().asTypeName()
 
         val newClassName = ClassName.bestGuess("${actorInterface}Proxy")
@@ -43,7 +48,7 @@ class ActorProxyGenerator(
                 .build()
 
         val classBuilder = TypeSpec.classBuilder(newClassName)
-                .addAnnotation(context.buildGenerationAnnotation())
+                .addAnnotation(context.generationAnnotation())
                 .primaryConstructor(ctr)
                 .superclass(parameterizedProxy)
                 .addSuperclassConstructorParameter(delegateParam.name)

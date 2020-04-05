@@ -2,6 +2,7 @@ package pt.pak3nuh.hollywood.processor.generator
 
 import pt.pak3nuh.hollywood.processor.Actor
 import pt.pak3nuh.hollywood.processor.generator.context.GenerationContextImpl
+import pt.pak3nuh.hollywood.processor.generator.types.KotlinMetadataExtractor
 import pt.pak3nuh.hollywood.processor.generator.types.TypeConverter
 import pt.pak3nuh.hollywood.processor.generator.types.TypeUtilImpl
 import pt.pak3nuh.hollywood.processor.generator.util.Logger
@@ -41,8 +42,9 @@ class GeneratorFacade : AbstractProcessor() {
         val typeUtil = TypeUtilImpl(logger, processingEnv.typeUtils, processingEnv.elementUtils, TypeConverter())
         val ctx = GenerationContextImpl(logger, typeUtil)
         val methodGenerator = MethodGenerator()
+        val kotlinMetadataExtractor = KotlinMetadataExtractor(typeUtil.metadataType)
         val generators = sequenceOf<FileGenerator>(
-                ActorProxyGenerator(methodGenerator),
+                ActorProxyGenerator(methodGenerator, kotlinMetadataExtractor::extract),
                 ActorFactoryGenerator()
         )
         annotatedElements.asSequence()

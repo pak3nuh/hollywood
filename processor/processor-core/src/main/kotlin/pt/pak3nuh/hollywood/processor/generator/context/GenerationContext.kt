@@ -9,8 +9,10 @@ interface GenerationContext {
 
     operator fun <T : Any> set(property: Property<T>, data: T): GenerationContext
     operator fun <T> get(property: Property<T>): T?
+    fun <T> remove(property: Property<T>): T?
 }
 
+@Suppress("UNCHECKED_CAST")
 class GenerationContextImpl(override val logger: Logger, override val typeUtil: TypeUtil): GenerationContext {
 
     private val map = mutableMapOf<Property<*>, Any>()
@@ -21,8 +23,10 @@ class GenerationContextImpl(override val logger: Logger, override val typeUtil: 
     }
 
     override operator fun <T> get(property: Property<T>): T? {
-        @Suppress("UNCHECKED_CAST")
         return map[property] as T?
     }
 
+    override fun <T> remove(property: Property<T>): T? {
+        return map.remove(property) as T?
+    }
 }

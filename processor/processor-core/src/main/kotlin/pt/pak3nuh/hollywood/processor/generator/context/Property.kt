@@ -2,6 +2,8 @@ package pt.pak3nuh.hollywood.processor.generator.context
 
 import com.squareup.kotlinpoet.AnnotationSpec
 
-sealed class Property<T>
+interface Property<T>
 
-object GenerationAnnotation: Property<AnnotationSpec>()
+class GenerationAnnotation(val annotationSpec: AnnotationSpec) {
+    companion object Key: Property<GenerationAnnotation>
+}

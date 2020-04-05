@@ -18,8 +18,20 @@ import kotlin.coroutines.Continuation
 
 interface TypeUtil {
 
+    /**
+     * [Continuation] type mirror.
+     */
     val coroutineJvmReturnType: TypeMirror
+
+    /**
+     * [Unit] type mirror.
+     */
     val unitType: TypeMirror
+
+    /**
+     * [Metadata] type element.
+     */
+    val metadataType: TypeElement
 
     fun isAssignable(t1: TypeMirror, t2: TypeMirror): Boolean
     fun isAssignableCoroutine(typeMirror: TypeMirror): Boolean
@@ -52,6 +64,8 @@ class TypeUtilImpl(
     override val coroutineJvmReturnType: TypeMirror = objectType
 
     override val unitType = getTypeMirror(Unit::class.java)
+
+    override val metadataType: TypeElement = elements.getTypeElement(Metadata::class.qualifiedName)
 
     private val customProxy: TypeMirror = getTypeMirror(ActorProxyBase::class.java)
 

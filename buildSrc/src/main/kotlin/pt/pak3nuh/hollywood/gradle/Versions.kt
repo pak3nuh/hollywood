@@ -13,6 +13,7 @@ private object Versions {
 object Dependencies {
     val kotlinPoet = "com.squareup:kotlinpoet:1.5.0"
     val kotlinCoroutines = kotlinx("kotlinx-coroutines-core", Versions.coroutines)
+    val kotlinMetadata = kotlinx("kotlinx-metadata-jvm", "0.1.0")
 
     // todo as of kotiln 1.3.70 this may not be needed
     val kotlinReflect = kotlin("reflect", Versions.kotlin)

@@ -10,7 +10,6 @@ import kotlin.reflect.KClass
  *
  * For that reason **javac** should remain the main source of information.
  */
-// todo documentation
 interface MetaClass {
     val functions: List<MetaFun>
     val name: String
@@ -32,8 +31,7 @@ interface MetaParameter {
 
 interface MetaType {
     val name: String
-    val isNullable: Boolean
-    // bound to Kotlin Poet to cut over engineering. can be improved if necessary
+    // bound to Kotlin Poet to cut over engineering. can be abstracted if necessary
     fun asTypeName(): TypeName
     fun hasAnnotation(kClass: KClass<out Annotation>): Boolean
 }

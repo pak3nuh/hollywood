@@ -24,8 +24,6 @@ private class WKType(kClass: KClass<*>, private val typeName: TypeName) : MetaTy
         return name.hashCode()
     }
 
-    override val isNullable = false
-
     override fun asTypeName(): TypeName = typeName
 
     override fun hasAnnotation(kClass: KClass<out Annotation>) = false

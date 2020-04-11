@@ -37,9 +37,6 @@ class MetaTypeImpl(
         }
     }
 
-    override val isNullable: Boolean
-        get() = Flag.Type.IS_NULLABLE(kmType.flags)
-
     override fun asTypeName(): TypeName {
         return TypeVisitor(kmType.flags, KmVariance.INVARIANT, null).also(kmType::accept).typeName
     }

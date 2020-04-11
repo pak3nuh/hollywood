@@ -75,6 +75,9 @@ this [bellow](#Constraints)
 but it has not reached the stable state yet. For that reason and because the data it may be unreadable, 
 the features provided by the annotation must be considered **optional** and the Mirror API the main source of truth.
 
+Metadata mode can explicitly be disabled by setting a system property:
+`hollywood.processor.disable-kotlin-metadata=true`
+
 ## Constraints
 
 These constraints reflect the current status of the project and may change in the future.

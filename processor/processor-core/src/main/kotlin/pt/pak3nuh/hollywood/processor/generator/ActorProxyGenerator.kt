@@ -16,7 +16,7 @@ class ActorProxyGenerator(
             "Actor annotation can only be used on interfaces"
         }
 
-        val kotlinMetadata: MetaClass? = metadataExtractor(element)
+        val kotlinMetadata: MetaClass? = if (context.useMetadata) metadataExtractor(element) else null
         val sourceFile = if (kotlinMetadata == null) {
             context.logger.logInfo("Kotlin metadata not available for type $element")
             javacGenerator.generate(element, context)

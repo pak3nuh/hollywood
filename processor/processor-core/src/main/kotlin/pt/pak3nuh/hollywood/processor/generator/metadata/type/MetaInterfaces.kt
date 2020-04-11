@@ -2,7 +2,6 @@ package pt.pak3nuh.hollywood.processor.generator.metadata.type
 
 import com.squareup.kotlinpoet.TypeName
 import pt.pak3nuh.hollywood.processor.generator.context.Property
-import kotlin.reflect.KClass
 
 /**
  * Interpretation of the [Metadata] emitted by the kotlin compiler. This metadata contain a lot more information
@@ -33,6 +32,5 @@ interface MetaType {
     val name: String
     // bound to Kotlin Poet to cut over engineering. can be abstracted if necessary
     fun asTypeName(): TypeName
-    fun hasAnnotation(kClass: KClass<out Annotation>): Boolean
 }
 

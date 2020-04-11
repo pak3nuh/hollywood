@@ -44,7 +44,7 @@ class GeneratorFacade : AbstractProcessor() {
 
     private fun generateFiles(annotatedElements: Set<Element>, destinationFolder: String) {
         val typeUtil = TypeUtilImpl(logger, processingEnv.typeUtils, processingEnv.elementUtils, TypeConverter())
-        val ctx = GenerationContextImpl(logger, typeUtil)
+        val ctx = GenerationContextImpl(logger, typeUtil, isMetadataEnabled())
         val typeChecker = TypeChecker(typeUtil)
         val javaGenerator = JavaProxyGenerator(MethodGenerator(typeChecker))
         val kotlinMethodGenerator = KotlinProxyGenerator(typeChecker)
@@ -65,6 +65,11 @@ class GeneratorFacade : AbstractProcessor() {
                     logger.logInfo("Writing source file $it")
                     it.writeTo(Paths.get(destinationFolder))
                 }
+    }
+
+    private fun isMetadataEnabled(): Boolean {
+        val property: String? = System.getProperty("hollywood.processor.disable-kotlin-metadata")
+        return property?.toBoolean()?.not() ?: true
     }
 
     override fun init(processingEnv: ProcessingEnvironment) {

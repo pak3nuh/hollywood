@@ -26,5 +26,4 @@ private class WKType(kClass: KClass<*>, private val typeName: TypeName) : MetaTy
 
     override fun asTypeName(): TypeName = typeName
 
-    override fun hasAnnotation(kClass: KClass<out Annotation>) = false
 }

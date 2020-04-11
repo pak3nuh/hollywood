@@ -1,7 +1,7 @@
 package pt.pakenuh.hollywood.sandbox.actor
 
 import pt.pak3nuh.hollywood.processor.Actor
-
+// todo run this test with metadata enabled and disabled. check detekt project to see how a gradle build can be run inside a test case
 /**
  * Generated actor must map java types to kotlin types in both parameters and return types
  * If the generated code compiles, the test passes
@@ -53,6 +53,9 @@ interface TypeMappingActor {
     suspend fun typeAliasWithGeneric(p1: Gen<String?>)
 
     suspend fun nothingFunction(): Nothing
+
+//    suspend fun actorParametersNotAllowed(p1: TypeMappingActor)
+//    suspend fun actorParametersNotAllowed(): TypeMappingActor
 }
 
 typealias Gen<T> = Generic<T>

@@ -46,6 +46,13 @@ interface TypeUtil {
     fun convert(element: Element): TypeName = convert(element.asType())
     fun isValidProxy(typeMirror: TypeMirror): Boolean
     fun isActor(typeMirror: TypeMirror): Boolean
+
+    /**
+     * Gets an elements given its name.
+     *
+     * @return The element or null if doesn't exist.
+     */
+    fun getElement(typeName: String): TypeElement?
 }
 
 class TypeUtilImpl(
@@ -73,6 +80,10 @@ class TypeUtilImpl(
     override val unitType = getTypeMirror(Unit::class.java)
 
     override val metadataType: TypeElement = elements.getTypeElement(Metadata::class.qualifiedName)
+
+    override fun getElement(typeName: String): TypeElement? {
+        return elements.getTypeElement(typeName)
+    }
 
     private val customProxy: TypeMirror = getTypeMirror(ActorProxyBase::class.java)
 

@@ -1,6 +1,5 @@
 package pt.pak3nuh.hollywood.processor.generator.util
 
-import pt.pak3nuh.hollywood.processor.Actor
 import pt.pak3nuh.hollywood.processor.generator.metadata.type.MetaFun
 import pt.pak3nuh.hollywood.processor.generator.metadata.type.MetaType
 import pt.pak3nuh.hollywood.processor.generator.mirror.TypeUtil
@@ -38,7 +37,15 @@ private class TypeCheckerImpl(
     }
 
     override fun checkNotActor(type: MetaType) {
-        check(!type.hasAnnotation(Actor::class)) { NOT_ACTOR }
+        val typeName = type.name
+        val element = typeUtil.getElement(typeName)
+        val isActor = if (null == element) {
+            // unknown element, most likely a flexible kotlin type (platform)
+            false
+        } else {
+            typeUtil.isActor(element.asType())
+        }
+        check(!isActor) { NOT_ACTOR }
     }
 
     override fun checkIsSuspend(parameters: Iterable<VariableElement>, returnType: TypeMirror): TypeMirror {

@@ -13,8 +13,6 @@ import kotlinx.metadata.KmType
 import kotlinx.metadata.KmTypeParameter
 import kotlinx.metadata.KmTypeVisitor
 import kotlinx.metadata.KmVariance
-import kotlinx.metadata.jvm.annotations
-import kotlin.reflect.KClass
 import kotlinx.metadata.ClassName as KClassName
 
 @Suppress("FunctionName")
@@ -31,8 +29,8 @@ class MetaTypeImpl(
 
     private fun getTypeName(): String {
         return when (val classifier = kmType.classifier) {
-            is KmClassifier.Class -> classifier.name
-            is KmClassifier.TypeAlias -> classifier.name
+            is KmClassifier.Class -> classifier.name.replace('/','.')
+            is KmClassifier.TypeAlias -> classifier.name.replace('/','.')
             is KmClassifier.TypeParameter -> typeParameters.first { it.id == classifier.id }.name
         }
     }
@@ -41,12 +39,6 @@ class MetaTypeImpl(
         return TypeVisitor(kmType.flags, KmVariance.INVARIANT, null).also(kmType::accept).typeName
     }
 
-    override fun hasAnnotation(kClass: KClass<out Annotation>): Boolean {
-        val qualifiedName = requireNotNull(kClass.qualifiedName) { "Qualified name not found for $kClass" }
-        return kmType.annotations.any {
-            it.className == qualifiedName
-        }
-    }
 }
 
 class TypeVisitor(

@@ -59,7 +59,8 @@ private class TypeCheckerImpl(
         val firstArgument = asDeclared.typeArguments.first()
         val argumentWildcard = firstArgument as WildcardType
 
-        return argumentWildcard.superBound
+        val superBound: TypeMirror? = argumentWildcard.superBound
+        return superBound ?: typeUtil.nothingType
     }
 
     override fun checkIsSuspend(metadata: MetaFun): MetaType {

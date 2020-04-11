@@ -24,6 +24,11 @@ interface TypeUtil {
     val coroutineJvmReturnType: TypeMirror
 
     /**
+     * [Nothing] type mirror.
+     */
+    val nothingType: TypeMirror
+
+    /**
      * [Unit] type mirror.
      */
     val unitType: TypeMirror
@@ -62,6 +67,8 @@ class TypeUtilImpl(
      * Type returned at the bytecode level
      */
     override val coroutineJvmReturnType: TypeMirror = objectType
+
+    override val nothingType = getTypeMirror(Nothing::class.java)
 
     override val unitType = getTypeMirror(Unit::class.java)
 

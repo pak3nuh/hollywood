@@ -48,7 +48,7 @@ class GeneratorFacade : AbstractProcessor() {
         val typeChecker = TypeChecker(typeUtil)
         val javaGenerator = JavaProxyGenerator(MethodGenerator(typeChecker))
         val kotlinMethodGenerator = KotlinProxyGenerator(typeChecker)
-        val kotlinMetadataExtractor = KotlinMetadataExtractor(typeUtil.metadataType)
+        val kotlinMetadataExtractor = KotlinMetadataExtractor(typeUtil.metadataType, logger)
         val generators = sequenceOf<FileGenerator>(
                 ActorProxyGenerator(kotlinMetadataExtractor::extract, javaGenerator, kotlinMethodGenerator),
                 ActorFactoryGenerator()

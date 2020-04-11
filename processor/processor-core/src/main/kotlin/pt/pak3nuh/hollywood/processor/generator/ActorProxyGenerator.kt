@@ -16,12 +16,13 @@ class ActorProxyGenerator(
             "Actor annotation can only be used on interfaces"
         }
 
-        // todo fallback to java generator if error??
         val kotlinMetadata = metadataExtractor(element)
         val sourceFile = if (kotlinMetadata == null) {
+            context.logger.logInfo("Kotlin metadata not available for type $element")
             javacGenerator.generate(element, context)
         } else {
             context[MetaClass] = kotlinMetadata
+            context.logger.logInfo("Using Kotlin metadata for type $element")
             kotlinMetadataGenerator.generate(element, context)
         }
 

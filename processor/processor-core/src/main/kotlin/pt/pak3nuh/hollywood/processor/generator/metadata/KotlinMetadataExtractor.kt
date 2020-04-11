@@ -2,26 +2,34 @@
 
 package pt.pak3nuh.hollywood.processor.generator.metadata
 
+import kotlinx.metadata.InconsistentKotlinMetadataException
 import kotlinx.metadata.jvm.KotlinClassHeader
 import kotlinx.metadata.jvm.KotlinClassMetadata
 import pt.pak3nuh.hollywood.processor.generator.metadata.type.MetaClass
+import pt.pak3nuh.hollywood.processor.generator.util.Logger
 import javax.lang.model.element.AnnotationMirror
 import javax.lang.model.element.AnnotationValue
 import javax.lang.model.element.TypeElement
 
 class KotlinMetadataExtractor(
-        private val metadataType: TypeElement
+        private val metadataType: TypeElement,
+        private val logger: Logger
 ) {
 
     fun extract(typeElement: TypeElement): MetaClass? {
-        val metadataAnnotation = typeElement.annotationMirrors.first { it.annotationType.asElement() == metadataType }
-        val header = convertHeader(metadataAnnotation)
-        val metadata = KotlinClassMetadata.read(header)
-        return if (metadata == null) {
-            null
-        } else {
-            MetaClass((metadata as KotlinClassMetadata.Class).toKmClass())
-        }
+        return typeElement.annotationMirrors
+                .firstOrNull { it.annotationType.asElement() == metadataType }
+                ?.let { annotationMirror ->
+                    val header = convertHeader(annotationMirror)
+                    try {
+                        KotlinClassMetadata.read(header)
+                    } catch (e: InconsistentKotlinMetadataException) {
+                        logger.logError(e)
+                        null
+                    }
+                }?.let { metadata ->
+                    MetaClass((metadata as KotlinClassMetadata.Class).toKmClass())
+                }
     }
 
     private fun convertHeader(metadataAnnotation: AnnotationMirror): KotlinClassHeader {

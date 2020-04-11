@@ -101,4 +101,8 @@ class TypeVisitor(
     override fun visitArgument(flags: Flags, variance: KmVariance): KmTypeVisitor? {
         return TypeVisitor(flags, variance, this)
     }
+
+    override fun visitTypeParameter(id: Int) {
+        error("Type parameters not supported")
+    }
 }

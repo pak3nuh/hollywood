@@ -49,6 +49,12 @@ interface TypeMappingActor {
     // different signature between nullable array and primitive array
     suspend fun arrayNullableOverload(primitiveArray: Array<Int?>)
     suspend fun arrayNullableOverload(primitiveArray: IntArray)
+
+    suspend fun typeAliasWithGeneric(p1: Gen<String?>)
+
+    suspend fun nothingFunction(): Nothing
 }
+
+typealias Gen<T> = Generic<T>
 
 class Generic<T>

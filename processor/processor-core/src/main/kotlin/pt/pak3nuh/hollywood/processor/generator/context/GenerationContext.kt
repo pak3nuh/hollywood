@@ -1,6 +1,6 @@
 package pt.pak3nuh.hollywood.processor.generator.context
 
-import pt.pak3nuh.hollywood.processor.generator.types.TypeUtil
+import pt.pak3nuh.hollywood.processor.generator.mirror.TypeUtil
 import pt.pak3nuh.hollywood.processor.generator.util.Logger
 
 interface GenerationContext {

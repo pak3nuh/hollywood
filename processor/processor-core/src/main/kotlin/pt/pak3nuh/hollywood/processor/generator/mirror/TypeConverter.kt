@@ -1,4 +1,4 @@
-package pt.pak3nuh.hollywood.processor.generator.types
+package pt.pak3nuh.hollywood.processor.generator.mirror
 
 import com.squareup.kotlinpoet.ARRAY
 import com.squareup.kotlinpoet.BOOLEAN

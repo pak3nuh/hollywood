@@ -39,12 +39,16 @@ interface TypeMappingActor {
         return string.toCharArray()
     }
 
-    // todo nullables don't work
-    //suspend fun nullableType(p1: Int?): List<String?>
+    suspend fun nullableType(p1: Int?): List<String>?
+
+    suspend fun nullableGeneric(p1: Generic<String?>): List<String?>
+
+    // not supported by design
+    //suspend fun <T> typeParameter(p1: T)
 
     // different signature between nullable array and primitive array
-    //suspend fun arrayNullableOverload(primitiveArray: Array<Int?>)
-    //suspend fun arrayNullableOverload(primitiveArray: IntArray)
+    suspend fun arrayNullableOverload(primitiveArray: Array<Int?>)
+    suspend fun arrayNullableOverload(primitiveArray: IntArray)
 }
 
 class Generic<T>

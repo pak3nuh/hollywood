@@ -1,4 +1,4 @@
-package pt.pak3nuh.hollywood.processor.generator.types
+package pt.pak3nuh.hollywood.processor.generator.mirror
 
 import com.squareup.kotlinpoet.TypeName
 import pt.pak3nuh.hollywood.actor.proxy.ActorProxyBase

@@ -1,31 +1,26 @@
 @file:Suppress("UNCHECKED_CAST")
 
-package pt.pak3nuh.hollywood.processor.generator.types
+package pt.pak3nuh.hollywood.processor.generator.metadata
 
-import kotlinx.metadata.KmClass
 import kotlinx.metadata.jvm.KotlinClassHeader
 import kotlinx.metadata.jvm.KotlinClassMetadata
-import pt.pak3nuh.hollywood.processor.generator.context.Property
+import pt.pak3nuh.hollywood.processor.generator.metadata.type.MetaClass
 import javax.lang.model.element.AnnotationMirror
 import javax.lang.model.element.AnnotationValue
 import javax.lang.model.element.TypeElement
-
-interface KotlinMetadata {
-    companion object Key : Property<KotlinMetadata>
-}
 
 class KotlinMetadataExtractor(
         private val metadataType: TypeElement
 ) {
 
-    fun extract(typeElement: TypeElement): KotlinMetadata {
+    fun extract(typeElement: TypeElement): MetaClass? {
         val metadataAnnotation = typeElement.annotationMirrors.first { it.annotationType.asElement() == metadataType }
         val header = convertHeader(metadataAnnotation)
         val metadata = KotlinClassMetadata.read(header)
         return if (metadata == null) {
-            UnsupportedMetadata(typeElement)
+            null
         } else {
-            FullKotlinMetadata((metadata as KotlinClassMetadata.Class).toKmClass())
+            MetaClass((metadata as KotlinClassMetadata.Class).toKmClass())
         }
     }
 
@@ -102,7 +97,3 @@ class KotlinMetadataExtractor(
     }
 
 }
-
-class FullKotlinMetadata(val metadata: KmClass): KotlinMetadata
-
-class UnsupportedMetadata(val typeElement: TypeElement) : KotlinMetadata

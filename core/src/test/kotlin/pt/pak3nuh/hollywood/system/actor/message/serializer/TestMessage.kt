@@ -6,7 +6,4 @@ import pt.pak3nuh.hollywood.actor.message.Parameter
 data class TestMessage(
         override val functionId: String,
         override val parameters: List<Parameter>
-) : Message {
-    override val returnValue
-        get() = error("Property not available")
-}
+) : Message

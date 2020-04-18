@@ -17,6 +17,8 @@ class OwnerFactory(private val clinicActors: ClinicActors) : OwnerActorBaseFacto
 
 data class OwnerContacts(
         val updateContact: (ExamResult, Treatment) -> OwnerContactResult,
+        // todo this breaks the requirements of the system, actors shouldn't communicate directly
+        // also breaks serializer
         val readyContact: suspend () -> Unit
 )
 

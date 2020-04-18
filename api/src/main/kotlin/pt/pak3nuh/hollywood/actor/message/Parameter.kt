@@ -35,6 +35,7 @@ data class ReferenceParameter(
 
 }
 
+// nullable primitives are reference types
 data class BooleanParameter(override val name: String, val value: Boolean): Parameter()
 data class ByteParameter(override val name: String, val value: Byte): Parameter()
 data class ShortParameter(override val name: String, val value: Short): Parameter()

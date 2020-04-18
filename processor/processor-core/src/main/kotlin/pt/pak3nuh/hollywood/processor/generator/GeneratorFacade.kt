@@ -2,9 +2,14 @@ package pt.pak3nuh.hollywood.processor.generator
 
 import pt.pak3nuh.hollywood.processor.Actor
 import pt.pak3nuh.hollywood.processor.generator.context.GenerationContextImpl
-import pt.pak3nuh.hollywood.processor.generator.types.TypeConverter
-import pt.pak3nuh.hollywood.processor.generator.types.TypeUtilImpl
+import pt.pak3nuh.hollywood.processor.generator.metadata.KotlinMetadataExtractor
+import pt.pak3nuh.hollywood.processor.generator.metadata.KotlinProxyGenerator
+import pt.pak3nuh.hollywood.processor.generator.mirror.JavaProxyGenerator
+import pt.pak3nuh.hollywood.processor.generator.mirror.MethodGenerator
+import pt.pak3nuh.hollywood.processor.generator.mirror.TypeConverter
+import pt.pak3nuh.hollywood.processor.generator.mirror.TypeUtilImpl
 import pt.pak3nuh.hollywood.processor.generator.util.Logger
+import pt.pak3nuh.hollywood.processor.generator.util.TypeChecker
 import java.nio.file.Paths
 import javax.annotation.processing.AbstractProcessor
 import javax.annotation.processing.ProcessingEnvironment
@@ -39,10 +44,13 @@ class GeneratorFacade : AbstractProcessor() {
 
     private fun generateFiles(annotatedElements: Set<Element>, destinationFolder: String) {
         val typeUtil = TypeUtilImpl(logger, processingEnv.typeUtils, processingEnv.elementUtils, TypeConverter())
-        val ctx = GenerationContextImpl(logger, typeUtil)
-        val methodGenerator = MethodGenerator()
+        val ctx = GenerationContextImpl(logger, typeUtil, isMetadataEnabled())
+        val typeChecker = TypeChecker(typeUtil)
+        val javaGenerator = JavaProxyGenerator(MethodGenerator(typeChecker))
+        val kotlinMethodGenerator = KotlinProxyGenerator(typeChecker)
+        val kotlinMetadataExtractor = KotlinMetadataExtractor(typeUtil.metadataType, logger)
         val generators = sequenceOf<FileGenerator>(
-                ActorProxyGenerator(methodGenerator),
+                ActorProxyGenerator(kotlinMetadataExtractor::extract, javaGenerator, kotlinMethodGenerator),
                 ActorFactoryGenerator()
         )
         annotatedElements.asSequence()
@@ -57,6 +65,11 @@ class GeneratorFacade : AbstractProcessor() {
                     logger.logInfo("Writing source file $it")
                     it.writeTo(Paths.get(destinationFolder))
                 }
+    }
+
+    private fun isMetadataEnabled(): Boolean {
+        val property: String? = System.getProperty("hollywood.processor.disable-kotlin-metadata")
+        return property?.toBoolean()?.not() ?: true
     }
 
     override fun init(processingEnv: ProcessingEnvironment) {

@@ -55,6 +55,29 @@ class GreeterProxy(
 
 There are some constraints for this, please see [bellow](#Constraints)
 
+## Two generator options
+
+Because this is a `kotlin` source generator on a `java` annotation processor environment there are two sources of information
+available to build the classes.
+
+1. `java` Mirror API
+2. `kotlin` Metadata annotation
+
+Most of the information required to generate the source files is available in the Mirror API, but there are some caveats.
+There isn't enough information to infer nullability of all arguments in the function parameters, and this is where the
+Metadata that the `kotlin` compiler emits comes in handy.
+
+When this annotation is present and readable, the processor can inspect a much closer representation of the actor
+interface. When it is not available the generator falls back to plain Mirror API and some features are lost. More on
+this [bellow](#Constraints)
+
+**NOTE**: The library used to read the metadata is on the official [Kotlin repo](https://github.com/JetBrains/kotlin/tree/master/libraries/kotlinx-metadata/jvm)
+but it has not reached the stable state yet. For that reason and because the data it may be unreadable, 
+the features provided by the annotation must be considered **optional** and the Mirror API the main source of truth.
+
+Metadata mode can explicitly be disabled by setting a system property:
+`hollywood.processor.disable-kotlin-metadata=true`
+
 ## Constraints
 
 These constraints reflect the current status of the project and may change in the future.
@@ -62,7 +85,7 @@ These constraints reflect the current status of the project and may change in th
 #### Suspend everywhere
 
 All methods of an actor must be **suspendable**. This is because an actor will work with
-mailboxes, serialization, possibly network and those are inheritably async in nature.
+mailboxes, serialization, possibly network, and those are inheritably async in nature.
 
 This should be expected because actor communication is message based and the actor model
 gives the guarantee that only one message is processed at any time.
@@ -76,7 +99,16 @@ hierarchies, different proxies need to be issued and this increases project
 complexity for little (and convoluted) gain.
 Although is possible to create actors manually that don't use interfaces but a class hierarchy.
 
-#### Not all kotlin types are supported
+#### Nullability support is not ensured
+If the `kotlin` compiler metadata isn't available the generator will fallback to the Mirror API. In this mode
+the nullability of the parameters and return type can't be obtained and all the actor signatures must be
+non null.
+
+While this may be an inconvenience, nullability can be easily avoided with overloads and wrapping types like Optional.
+
+#### Not all `kotlin` types are supported
+**Only applies to Mirror API mode**
+
 Because this is a `java` annotation processor, the `kotlin` compiler will issue `elements` native
 to the `JDK` ecosystem. This means that the opposite process must exist, transforming `java` 
 elements into `kotlin` types.
@@ -85,7 +117,7 @@ Since there is no such mechanism provided by the `kotlin` ecosystem, it was chos
 only a subset of those translations. This subset tries to provide just the basic blocks needed
 without having to create a new type for the interaction.
 
-The subset is in this [file](../processor/processor-core/src/main/kotlin/pt/pak3nuh/hollywood/processor/generator/types/TypeConverter.kt)
+The subset is in this [file](../processor/processor-core/src/main/kotlin/pt/pak3nuh/hollywood/processor/generator/mirror/TypeConverter.kt)
 and they are roughly:
 - Primitives
 - Arrays
@@ -123,7 +155,7 @@ will use functionalities present in this class. It is safer to extend the class 
 maintaining some brittle naming contract.
 
 Some of this restriction apply in different phases. Some will break the annotation processor,
-others will break on the kotlin compilation phase.
+others will break on the `kotlin` compilation phase.
 
 ## Proxy structure
 

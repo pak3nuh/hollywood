@@ -1,4 +1,4 @@
-package pt.pak3nuh.hollywood.processor.generator.types
+package pt.pak3nuh.hollywood.processor.generator.mirror
 
 import com.squareup.kotlinpoet.TypeName
 import pt.pak3nuh.hollywood.actor.proxy.ActorProxyBase
@@ -18,8 +18,25 @@ import kotlin.coroutines.Continuation
 
 interface TypeUtil {
 
+    /**
+     * [Continuation] type mirror.
+     */
     val coroutineJvmReturnType: TypeMirror
+
+    /**
+     * [Nothing] type mirror.
+     */
+    val nothingType: TypeMirror
+
+    /**
+     * [Unit] type mirror.
+     */
     val unitType: TypeMirror
+
+    /**
+     * [Metadata] type element.
+     */
+    val metadataType: TypeElement
 
     fun isAssignable(t1: TypeMirror, t2: TypeMirror): Boolean
     fun isAssignableCoroutine(typeMirror: TypeMirror): Boolean
@@ -29,6 +46,13 @@ interface TypeUtil {
     fun convert(element: Element): TypeName = convert(element.asType())
     fun isValidProxy(typeMirror: TypeMirror): Boolean
     fun isActor(typeMirror: TypeMirror): Boolean
+
+    /**
+     * Gets an elements given its name.
+     *
+     * @return The element or null if doesn't exist.
+     */
+    fun getElement(typeName: String): TypeElement?
 }
 
 class TypeUtilImpl(
@@ -51,7 +75,15 @@ class TypeUtilImpl(
      */
     override val coroutineJvmReturnType: TypeMirror = objectType
 
+    override val nothingType = getTypeMirror(Nothing::class.java)
+
     override val unitType = getTypeMirror(Unit::class.java)
+
+    override val metadataType: TypeElement = elements.getTypeElement(Metadata::class.qualifiedName)
+
+    override fun getElement(typeName: String): TypeElement? {
+        return elements.getTypeElement(typeName)
+    }
 
     private val customProxy: TypeMirror = getTypeMirror(ActorProxyBase::class.java)
 

@@ -93,3 +93,5 @@ For more detailed documentation
 
 - [Actor Lifecycle](doc/ActorLifecycle.md)
 - [Processor](doc/Processor.md)
+- [Messaging](doc/Messaging.md)
+- [Serialization](doc/Serialization.md)

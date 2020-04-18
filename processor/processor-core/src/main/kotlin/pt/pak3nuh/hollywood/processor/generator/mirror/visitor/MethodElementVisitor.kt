@@ -1,4 +1,4 @@
-package pt.pak3nuh.hollywood.processor.visitor
+package pt.pak3nuh.hollywood.processor.generator.mirror.visitor
 
 import pt.pak3nuh.hollywood.processor.generator.NoOpResult
 import pt.pak3nuh.hollywood.processor.generator.Result

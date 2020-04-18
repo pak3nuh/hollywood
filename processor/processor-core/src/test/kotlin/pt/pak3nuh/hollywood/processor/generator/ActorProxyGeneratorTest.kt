@@ -8,7 +8,7 @@ import javax.lang.model.element.ElementKind
 internal class ActorProxyGeneratorTest {
     @Test
     internal fun `should only accept interfaces`() {
-        val generator = ActorProxyGenerator(mockk())
+        val generator = ActorProxyGenerator(mockk(), mockk(), mockk())
         assertThrows<IllegalArgumentException> {
             generator.generate(TypeElementStub(ElementKind.ANNOTATION_TYPE), mockk())
         }

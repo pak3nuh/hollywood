@@ -8,6 +8,7 @@ import pt.pakenuh.hollywood.sandbox.actor.PetFactory
 import pt.pakenuh.hollywood.sandbox.actor.VetFactory
 import pt.pakenuh.hollywood.sandbox.clinic.PetClinic
 import pt.pakenuh.hollywood.sandbox.clinic.PetClinicImpl
+import pt.pakenuh.hollywood.sandbox.owner.ContactService
 import pt.pakenuh.hollywood.sandbox.vet.Vet
 
 fun createClinic(): PetClinic {
@@ -18,6 +19,7 @@ fun createClinic(): PetClinic {
 
     val maxVetSlots = 5
 
+    val contactService = ContactService()
     val actorSystem = SystemBuilder()
             .withProperty(ClinicActorsProperty) {
                 ClinicActors(it.actorManager)
@@ -25,8 +27,8 @@ fun createClinic(): PetClinic {
             .registerFactory(ClinicBinaryFactory::class) { _, props ->
                 ClinicBinaryFactory(vets, props[ClinicActorsProperty])
             }
-            .registerFactory(OwnerFactory::class) { _, props ->
-                OwnerFactory(props[ClinicActorsProperty])
+            .registerFactory(OwnerFactory::class) { _, _ ->
+                OwnerFactory(contactService)
             }
             .registerFactory(PetFactory::class) { _, props ->
                 PetFactory(props[ClinicActorsProperty])
@@ -36,7 +38,7 @@ fun createClinic(): PetClinic {
             }
             .build()
 
-    return PetClinicImpl(actorSystem, vets)
+    return PetClinicImpl(actorSystem, vets, contactService)
 }
 
 object ClinicActorsProperty : SystemBuilder.Property<ClinicActors>()

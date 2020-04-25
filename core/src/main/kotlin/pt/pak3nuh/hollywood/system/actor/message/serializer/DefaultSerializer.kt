@@ -58,7 +58,7 @@ internal class DefaultSerializer {
         val value: Any? = when (val returnValue: ReturnValue = response.returnValue) {
             UnitReturn -> null
             is ValueReturn -> returnValue.value
-            is ExceptionReturn -> returnValue.exception
+            is ExceptionReturn -> returnValue
         }
         if (value != null) {
             serializer.register(value::class.java)
@@ -75,7 +75,7 @@ internal class DefaultSerializer {
     fun deserializeResponse(byteArray: ByteArray): Response {
         val response = when (val value: Any? = serializer.readObject(Input(byteArray), Any::class.java)) {
             null -> UnitReturn
-            is Exception -> ExceptionReturn(value)
+            is ExceptionReturn -> value
             else -> ValueReturn(value)
         }
         return ResponseImpl(response)

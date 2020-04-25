@@ -1,24 +1,26 @@
 package pt.pakenuh.hollywood.sandbox.clinic
 
-import kotlinx.coroutines.CompletableJob
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import pt.pak3nuh.hollywood.system.ActorSystem
 import pt.pakenuh.hollywood.sandbox.Loggers
-import pt.pakenuh.hollywood.sandbox.actor.OwnerContacts
 import pt.pakenuh.hollywood.sandbox.actor.VetFactory
 import pt.pakenuh.hollywood.sandbox.actor.getPetClinic
+import pt.pakenuh.hollywood.sandbox.coroutine.TestScope
+import pt.pakenuh.hollywood.sandbox.owner.ContactService
 import pt.pakenuh.hollywood.sandbox.owner.CreditCard
+import pt.pakenuh.hollywood.sandbox.owner.OwnerContacts
 import pt.pakenuh.hollywood.sandbox.pet.Pet
 import pt.pakenuh.hollywood.sandbox.pet.PetId
 import pt.pakenuh.hollywood.sandbox.vet.Vet
-import kotlin.coroutines.CoroutineContext
 
-class PetClinicImpl(actorSystem: ActorSystem, vets: List<Vet>) : PetClinic, CoroutineScope {
+class PetClinicImpl(
+        actorSystem: ActorSystem,
+        vets: List<Vet>,
+        private val contactService: ContactService,
+        private val coroutineScope: CoroutineScope = TestScope
+) : PetClinic {
 
-    private val job: CompletableJob = Job()
-    override val coroutineContext: CoroutineContext = job
     private val petClinicActor = actorSystem.getPetClinic()
     private val logger = Loggers.getLogger<PetClinicImpl>()
 
@@ -29,7 +31,7 @@ class PetClinicImpl(actorSystem: ActorSystem, vets: List<Vet>) : PetClinic, Coro
                 it.createVet()
             }
         }.forEach {
-            launch {
+            coroutineScope.launch {
                 logger.fine("Starting vet actor")
                 it.startWork()
             }
@@ -37,7 +39,10 @@ class PetClinicImpl(actorSystem: ActorSystem, vets: List<Vet>) : PetClinic, Coro
     }
 
     override suspend fun checkinPet(pet: Pet, contacts: OwnerContacts) {
-        petClinicActor.checkinPet(pet, contacts)
+        contactService.registerContact(pet.petId.ownerId, contacts)
+        coroutineScope.launch {
+            petClinicActor.checkinPet(pet)
+        }
     }
 
     override suspend fun checkoutPet(petId: PetId, creditCard: CreditCard): Receipt {
@@ -55,6 +60,5 @@ class PetClinicImpl(actorSystem: ActorSystem, vets: List<Vet>) : PetClinic, Coro
 
     override suspend fun waitClosing() {
         petClinicActor.waitClosing()
-        job.complete()
     }
 }

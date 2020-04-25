@@ -1,7 +1,6 @@
 package pt.pakenuh.hollywood.sandbox.actor.proxy
 
 import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import pt.pak3nuh.hollywood.actor.message.ExceptionReturn
@@ -15,12 +14,11 @@ import pt.pak3nuh.hollywood.actor.message.ValueReturn
 import pt.pak3nuh.hollywood.actor.proxy.ActorProxyBase
 import pt.pak3nuh.hollywood.actor.proxy.ProxyConfiguration
 import pt.pakenuh.hollywood.sandbox.actor.ClinicActor
-import pt.pakenuh.hollywood.sandbox.actor.OwnerContacts
 import pt.pakenuh.hollywood.sandbox.clinic.Exam
 import pt.pakenuh.hollywood.sandbox.clinic.ExamResult
 import pt.pakenuh.hollywood.sandbox.clinic.Receipt
+import pt.pakenuh.hollywood.sandbox.coroutine.TestScope
 import pt.pakenuh.hollywood.sandbox.owner.CreditCard
-import pt.pakenuh.hollywood.sandbox.owner.OwnerId
 import pt.pakenuh.hollywood.sandbox.pet.Pet
 import pt.pakenuh.hollywood.sandbox.pet.PetId
 import kotlin.coroutines.coroutineContext
@@ -32,13 +30,12 @@ open class ClinicBinaryProxy(delegate: ClinicActor, configuration: ProxyConfigur
     private val deserializer = configuration.deserializer
     private val createBuilder = configuration::newMessageBuilder
 
-    override suspend fun checkinPet(pet: Pet, contacts: OwnerContacts) {
+    override suspend fun checkinPet(pet: Pet) {
         // emmit msg builder
         val message: Message = createBuilder()
                 // emmit parameters
                 .parameters {
                     param("pet", pet, false)
-                    param("contacts", contacts, false)
                 }
                 // emmit function build
                 .build("checkinPet")
@@ -93,22 +90,6 @@ open class ClinicBinaryProxy(delegate: ClinicActor, configuration: ProxyConfigur
         return cast(dispatch(message))
     }
 
-    override suspend fun getOwnerContact(petId: PetId): OwnerContacts {
-        val message: Message = createBuilder()
-                .parameters {
-                    param("petId", petId, false)
-                }.build("getOwnerContact")
-        return cast(dispatch(message))
-    }
-
-    override suspend fun getLatestOwnerContacts(ownerId: OwnerId): OwnerContacts {
-        val message: Message = createBuilder()
-                .parameters {
-                    param("ownerId", ownerId, false)
-                }.build("getLatestOwnerContacts")
-        return cast(dispatch(message))
-    }
-
     private suspend fun dispatch(message: Message): Any? {
         val packedMessage = serializer.serialize(message)
         val currentJob = requireNotNull(coroutineContext[Job])
@@ -116,7 +97,7 @@ open class ClinicBinaryProxy(delegate: ClinicActor, configuration: ProxyConfigur
 
         // simulated mailbox
         // actual implementation should use the actorSystem to send and receive the results
-        GlobalScope.launch {
+        TestScope.launch {
             val response = try {
                 onMessage(packedMessage)
             } catch (e: Exception) {
@@ -135,7 +116,7 @@ open class ClinicBinaryProxy(delegate: ClinicActor, configuration: ProxyConfigur
 
     private fun parse(response: Response): Any? {
         return when (val returnValue = response.returnValue) {
-            is ExceptionReturn -> throw returnValue.exception
+            is ExceptionReturn -> throw ProxyResponseException(returnValue.message, returnValue.stackTrace)
             is ValueReturn -> returnValue.value
             UnitReturn -> Unit
         }
@@ -145,22 +126,21 @@ open class ClinicBinaryProxy(delegate: ClinicActor, configuration: ProxyConfigur
         val message = deserializer.asMessage(packedMessage)
         val params = MsgParams(message)
         val functionResult = when (message.functionId) {
-            "checkinPet:Lpt.pakenuh.hollywood.sandbox.pet.Pet;Lpt.pakenuh.hollywood.sandbox.actor.OwnerContacts" -> unitResult { delegate.checkinPet(params.getObject("pet"), params.getObject("contacts")) }
+            "checkinPet:Lpt.pakenuh.hollywood.sandbox.pet.Pet" -> unitResult { delegate.checkinPet(params.getObject("pet")) }
             "checkoutPet:Lpt.pakenuh.hollywood.sandbox.pet.PetId;Lpt.pakenuh.hollywood.sandbox.owner.CreditCard" -> valueResult { delegate.checkoutPet(params.getObject("petId"), params.getObject("creditCard")) }
             "petReady:Lpt.pakenuh.hollywood.sandbox.pet.Pet" -> unitResult { delegate.petReady(params.getObject("pet")) }
             "orderExam:Lpt.pakenuh.hollywood.sandbox.pet.Pet;Lpt.pakenuh.hollywood.sandbox.clinic.Exam" -> valueResult { delegate.orderExam(params.getObject("pet"), params.getObject("exam")) }
             "getPetToSee:Lpt.pakenuh.hollywood.sandbox.pet.PetId" -> valueResult { delegate.getPetToSee(params.getObject("petId")) }
             "getPets:" -> valueResult { delegate.getPets() }
             "waitClosing:" -> unitResult { delegate.waitClosing() }
-            "getOwnerContact:Lpt.pakenuh.hollywood.sandbox.pet.PetId" -> valueResult { delegate.getOwnerContact(params.getObject("petId")) }
-            "getLatestOwnerContacts:Lpt.pakenuh.hollywood.sandbox.owner.OwnerId" -> valueResult { delegate.getLatestOwnerContacts(params.getObject("ownerId")) }
             else -> error("Function id ${message.functionId} unknown")
         }
         return ResponseImpl(functionResult)
     }
 
     private inline fun <T> valueResult(block: () -> T): ReturnValue {
-        return ValueReturn(block())
+        val value = block()
+        return ValueReturn(value)
     }
 
     private inline fun unitResult(block: () -> Unit): ReturnValue {
@@ -188,3 +168,4 @@ class MsgParams(private val message: Message) {
 }
 
 data class ResponseImpl(override val returnValue: ReturnValue): Response
+class ProxyResponseException(message: String?, stackTrace: List<StackTraceElement>?) : RuntimeException(message)

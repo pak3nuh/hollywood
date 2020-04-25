@@ -1,7 +1,7 @@
 package pt.pakenuh.hollywood.sandbox.clinic
 
-import pt.pakenuh.hollywood.sandbox.actor.OwnerContacts
 import pt.pakenuh.hollywood.sandbox.owner.CreditCard
+import pt.pakenuh.hollywood.sandbox.owner.OwnerContacts
 import pt.pakenuh.hollywood.sandbox.pet.Pet
 import pt.pakenuh.hollywood.sandbox.pet.PetId
 

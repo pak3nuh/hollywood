@@ -15,8 +15,8 @@ import pt.pakenuh.hollywood.sandbox.clinic.ExamResult
 import pt.pakenuh.hollywood.sandbox.clinic.NokResult
 import pt.pakenuh.hollywood.sandbox.clinic.OkResult
 import pt.pakenuh.hollywood.sandbox.clinic.Receipt
+import pt.pakenuh.hollywood.sandbox.coroutine.TestScope
 import pt.pakenuh.hollywood.sandbox.owner.CreditCard
-import pt.pakenuh.hollywood.sandbox.owner.OwnerId
 import pt.pakenuh.hollywood.sandbox.pet.Pet
 import pt.pakenuh.hollywood.sandbox.pet.PetId
 import pt.pakenuh.hollywood.sandbox.vet.Vet
@@ -26,15 +26,13 @@ open class CustomProxy<T>(delegate: T, config: ProxyConfiguration) : ActorProxyB
 
 @Actor(CustomProxy::class)
 interface ClinicActor {
-    suspend fun checkinPet(pet: Pet, contacts: OwnerContacts)
+    suspend fun checkinPet(pet: Pet)
     suspend fun checkoutPet(petId: PetId, creditCard: CreditCard): Receipt
     suspend fun petReady(pet: Pet)
     suspend fun orderExam(pet: Pet, exam: Exam): ExamResult
     suspend fun getPetToSee(petId: PetId): Pet
     suspend fun getPets(): List<PetId>
     suspend fun waitClosing()
-    suspend fun getOwnerContact(petId: PetId): OwnerContacts
-    suspend fun getLatestOwnerContacts(ownerId: OwnerId): OwnerContacts
 
     companion object {
         const val CLINIC_ID = "clinic unique id"
@@ -56,15 +54,15 @@ class ClinicBinaryFactory(private val vets: List<Vet>, private val actors: Clini
 internal class ClinicActorImpl(private val vets: List<Vet>, private val actors: ClinicActors) : ClinicActor {
 
     private val pets = mutableMapOf<String, PetInObservation>()
-    private val job: CompletableJob = Job()
+    private val job: CompletableJob = Job(TestScope.job)
     private val logger = Loggers.getLogger<ClinicActorImpl>()
 
-    override suspend fun checkinPet(pet: Pet, contacts: OwnerContacts) {
+    override suspend fun checkinPet(pet: Pet) {
         val firstAvailableVet = vets.firstOrNull {
             actors.getVet(it).trySchedule(pet)
         } ?: throw PetClinicException("No vets available")
 
-        pets[pet.petId.registryId] = PetInObservation(pet, contacts, firstAvailableVet)
+        pets[pet.petId.registryId] = PetInObservation(pet, firstAvailableVet)
         return
     }
 
@@ -120,24 +118,12 @@ internal class ClinicActorImpl(private val vets: List<Vet>, private val actors: 
         job.join()
     }
 
-    override suspend fun getOwnerContact(petId: PetId): OwnerContacts {
-        return requirePet(petId).contacts
-    }
-
-    override suspend fun getLatestOwnerContacts(ownerId: OwnerId): OwnerContacts {
-        return pets.asSequence()
-                .filter { it.value.pet.petId.ownerId == ownerId }
-                .map { it.value.contacts }
-                .first()
-    }
-
     private fun requirePet(petId: PetId): PetInObservation = pets[petId.registryId]
             ?: throw PetClinicException("Unknown pet")
 }
 
 private data class PetInObservation(
         val pet: Pet,
-        val contacts: OwnerContacts,
         val vet: Vet,
         var state: State = State.WAITING_VET,
         val exams: MutableList<Exam> = ArrayList(),

@@ -3,13 +3,15 @@ package pt.pakenuh.hollywood.sandbox.actor.proxy
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import pt.pak3nuh.hollywood.actor.message.ExceptionResponse
 import pt.pak3nuh.hollywood.actor.message.ExceptionReturn
 import pt.pak3nuh.hollywood.actor.message.Message
 import pt.pak3nuh.hollywood.actor.message.Parameter
 import pt.pak3nuh.hollywood.actor.message.ReferenceParameter
 import pt.pak3nuh.hollywood.actor.message.Response
-import pt.pak3nuh.hollywood.actor.message.ReturnValue
-import pt.pak3nuh.hollywood.actor.message.UnitReturn
+import pt.pak3nuh.hollywood.actor.message.ReturnType
+import pt.pak3nuh.hollywood.actor.message.UnitResponse
+import pt.pak3nuh.hollywood.actor.message.ValueResponse
 import pt.pak3nuh.hollywood.actor.message.ValueReturn
 import pt.pak3nuh.hollywood.actor.proxy.ActorProxyBase
 import pt.pak3nuh.hollywood.actor.proxy.ProxyConfiguration
@@ -101,12 +103,14 @@ open class ClinicBinaryProxy(delegate: ClinicActor, configuration: ProxyConfigur
             val response = try {
                 onMessage(packedMessage)
             } catch (e: Exception) {
-                ResponseImpl(ExceptionReturn(e))
+                ExceptionResponse(e)
             }
-            result.complete(serializer.serialize(response))
+            val asBytes = serializer.serialize(response)
+            result.complete(asBytes)
         }
 
-        return onResponse(result.await())
+        val responseBytes = result.await()
+        return onResponse(responseBytes)
     }
 
     private fun onResponse(responseBytes: ByteArray): Any? {
@@ -115,17 +119,20 @@ open class ClinicBinaryProxy(delegate: ClinicActor, configuration: ProxyConfigur
     }
 
     private fun parse(response: Response): Any? {
-        return when (val returnValue = response.returnValue) {
-            is ExceptionReturn -> throw ProxyResponseException(returnValue.message, returnValue.stackTrace)
-            is ValueReturn -> returnValue.value
-            UnitReturn -> Unit
+        return when (response.returnType) {
+            ReturnType.EXCEPTION -> {
+                val exceptionReturn = response.returnValue as ExceptionReturn
+                throw ProxyResponseException(exceptionReturn.message, exceptionReturn.stackTrace)
+            }
+            ReturnType.VALUE -> (response.returnValue as ValueReturn).value
+            ReturnType.UNIT -> Unit
         }
     }
 
     private suspend fun onMessage(packedMessage: ByteArray): Response {
         val message = deserializer.asMessage(packedMessage)
         val params = MsgParams(message)
-        val functionResult = when (message.functionId) {
+        return when (message.functionId) {
             "checkinPet:Lpt.pakenuh.hollywood.sandbox.pet.Pet" -> unitResult { delegate.checkinPet(params.getObject("pet")) }
             "checkoutPet:Lpt.pakenuh.hollywood.sandbox.pet.PetId;Lpt.pakenuh.hollywood.sandbox.owner.CreditCard" -> valueResult { delegate.checkoutPet(params.getObject("petId"), params.getObject("creditCard")) }
             "petReady:Lpt.pakenuh.hollywood.sandbox.pet.Pet" -> unitResult { delegate.petReady(params.getObject("pet")) }
@@ -135,17 +142,16 @@ open class ClinicBinaryProxy(delegate: ClinicActor, configuration: ProxyConfigur
             "waitClosing:" -> unitResult { delegate.waitClosing() }
             else -> error("Function id ${message.functionId} unknown")
         }
-        return ResponseImpl(functionResult)
     }
 
-    private inline fun <T> valueResult(block: () -> T): ReturnValue {
+    private inline fun <T> valueResult(block: () -> T): Response {
         val value = block()
-        return ValueReturn(value)
+        return ValueResponse(value)
     }
 
-    private inline fun unitResult(block: () -> Unit): ReturnValue {
+    private inline fun unitResult(block: () -> Unit): Response {
         block()
-        return UnitReturn
+        return UnitResponse()
     }
 
     private fun <T> cast(value: Any?): T = value as T
@@ -167,5 +173,4 @@ class MsgParams(private val message: Message) {
     }
 }
 
-data class ResponseImpl(override val returnValue: ReturnValue): Response
 class ProxyResponseException(message: String?, stackTrace: List<StackTraceElement>?) : RuntimeException(message)

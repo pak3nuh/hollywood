@@ -5,6 +5,7 @@ import kotlinx.coroutines.isActive
 import pt.pak3nuh.hollywood.processor.Actor
 import pt.pakenuh.hollywood.sandbox.Loggers
 import pt.pakenuh.hollywood.sandbox.clinic.Exam
+import pt.pakenuh.hollywood.sandbox.clinic.ExamResult
 import pt.pakenuh.hollywood.sandbox.clinic.OwnerContactResult
 import pt.pakenuh.hollywood.sandbox.pet.Pet
 import kotlin.coroutines.coroutineContext
@@ -56,7 +57,7 @@ private class VetActorImpl(private val actors: ClinicActors, private val maxSlot
         if (!isHealthy(pet)) {
             // for simplicity only the first result is obtained
             logger.fine("Pet unhealthy, starting analysis")
-            val (exam, treatment) = when {
+            val result: Any = when {
                 pet.brokenBones -> clinic.orderExam(pet, Exam.X_RAY) to Treatment.APPLY_CAST
                 pet.getsTiredFast -> clinic.orderExam(pet, Exam.SOUND_SCAN) to Treatment.HEART_CIRGURY
                 pet.hasFainted -> clinic.orderExam(pet, Exam.BLOOD_PRESSURE) to Treatment.BLOOD_THINNER
@@ -64,6 +65,7 @@ private class VetActorImpl(private val actors: ClinicActors, private val maxSlot
                 pet.peesBlood -> clinic.orderExam(pet, Exam.KIDNEY_EXAM) to Treatment.KIDNEY_TRANSPLANT
                 else -> error("shouldn't be here")
             }
+            val (exam, treatment) = (result as Pair<ExamResult, Treatment>)
             logger.fine("Analysis result $exam contacting owner")
             val owner = actors.getOwner(pet.petId.ownerId)
             when (owner.contact(exam, treatment)) {

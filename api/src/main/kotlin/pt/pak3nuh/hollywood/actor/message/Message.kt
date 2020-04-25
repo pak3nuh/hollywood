@@ -7,9 +7,6 @@ interface Message {
     val parameters: List<Parameter>
 }
 
-interface Response {
-    val returnValue: ReturnValue
-}
 
 interface MessageBuilder {
     fun parameters(block: ParameterScope.() -> Unit): MessageBuilder

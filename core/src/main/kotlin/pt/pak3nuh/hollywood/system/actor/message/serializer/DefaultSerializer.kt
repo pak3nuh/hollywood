@@ -17,6 +17,7 @@ import pt.pak3nuh.hollywood.actor.message.Message
 import pt.pak3nuh.hollywood.actor.message.Parameter
 import pt.pak3nuh.hollywood.actor.message.ReferenceParameter
 import pt.pak3nuh.hollywood.actor.message.Response
+import pt.pak3nuh.hollywood.actor.message.ReturnType
 import pt.pak3nuh.hollywood.actor.message.ReturnValue
 import pt.pak3nuh.hollywood.actor.message.ShortParameter
 import pt.pak3nuh.hollywood.actor.message.UnitReturn
@@ -27,6 +28,10 @@ import java.io.Serializable
 internal class DefaultSerializer {
 
     private val serializer = Kryo()
+
+    enum class WellKnownValues {
+        UNIT
+    }
 
     init {
         // First tries reflection, then gets creative with objenesis
@@ -43,6 +48,12 @@ internal class DefaultSerializer {
         serializer.register(LongParameter::class.java)
         serializer.register(FloatParameter::class.java)
         serializer.register(DoubleParameter::class.java)
+
+        serializer.register(ReturnType::class.java)
+        serializer.register(InternalResponse::class.java)
+        serializer.register(UnitReturn::class.java)
+        serializer.register(ValueReturn::class.java)
+        serializer.register(ExceptionReturn::class.java)
     }
 
     fun serialize(message: Message): ByteArray {
@@ -55,15 +66,8 @@ internal class DefaultSerializer {
 
     fun serialize(response: Response): ByteArray {
         val output = Output(ByteArrayOutputStream())
-        val value: Any? = when (val returnValue: ReturnValue = response.returnValue) {
-            UnitReturn -> null
-            is ValueReturn -> returnValue.value
-            is ExceptionReturn -> returnValue
-        }
-        if (value != null) {
-            serializer.register(value::class.java)
-            serializer.writeObject(output, value)
-        }
+        val internal = InternalResponse(response.returnType, response.returnValue)
+        serializer.writeObject(output, internal)
         return output.toBytes()
     }
 
@@ -73,12 +77,7 @@ internal class DefaultSerializer {
     }
 
     fun deserializeResponse(byteArray: ByteArray): Response {
-        val response = when (val value: Any? = serializer.readObject(Input(byteArray), Any::class.java)) {
-            null -> UnitReturn
-            is ExceptionReturn -> value
-            else -> ValueReturn(value)
-        }
-        return ResponseImpl(response)
+        return serializer.readObject(Input(byteArray), InternalResponse::class.java)
     }
 
     private fun registerParameterClasses(parameters: List<Parameter>) {
@@ -106,4 +105,4 @@ internal data class InternalMessage constructor(val functionId: String, val para
 }
 
 internal data class ReconstructedMessage(override val functionId: String, override val parameters: List<Parameter>): Message
-internal data class ResponseImpl(override val returnValue: ReturnValue): Response
+internal data class InternalResponse(override val returnType: ReturnType, override val returnValue: ReturnValue): Response

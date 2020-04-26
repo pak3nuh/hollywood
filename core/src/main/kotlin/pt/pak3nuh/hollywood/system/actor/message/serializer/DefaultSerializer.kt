@@ -23,15 +23,10 @@ import pt.pak3nuh.hollywood.actor.message.ShortParameter
 import pt.pak3nuh.hollywood.actor.message.UnitReturn
 import pt.pak3nuh.hollywood.actor.message.ValueReturn
 import java.io.ByteArrayOutputStream
-import java.io.Serializable
 
 internal class DefaultSerializer {
 
     private val serializer = Kryo()
-
-    enum class WellKnownValues {
-        UNIT
-    }
 
     init {
         // First tries reflection, then gets creative with objenesis
@@ -59,25 +54,37 @@ internal class DefaultSerializer {
     fun serialize(message: Message): ByteArray {
         registerParameterClasses(message.parameters)
         val internalMessage = InternalMessage.from(message)
-        val output = Output(ByteArrayOutputStream())
-        serializer.writeObject(output, internalMessage)
-        return output.toBytes()
+        ByteArrayOutputStream().use { stream ->
+            Output(stream).use { output ->
+                serializer.writeClassAndObject(output, internalMessage)
+                output.flush()
+                return stream.toByteArray()
+            }
+        }
+
     }
 
     fun serialize(response: Response): ByteArray {
-        val output = Output(ByteArrayOutputStream())
-        val internal = InternalResponse(response.returnType, response.returnValue)
-        serializer.writeObject(output, internal)
-        return output.toBytes()
+        ByteArrayOutputStream().use { stream ->
+            Output(stream).use { output ->
+                val internal = InternalResponse(response.returnType, response.returnValue)
+                serializer.writeClassAndObject(output, internal)
+                output.flush()
+                return stream.toByteArray()
+            }
+        }
     }
 
     fun deserializeMessage(byteArray: ByteArray): Message {
-        val internalMessage = serializer.readObject(Input(byteArray), InternalMessage::class.java)
-        return ReconstructedMessage(internalMessage.functionId, internalMessage.parameters)
+        Input(byteArray).use {
+            return serializer.readClassAndObject(it) as InternalMessage
+        }
     }
 
     fun deserializeResponse(byteArray: ByteArray): Response {
-        return serializer.readObject(Input(byteArray), InternalResponse::class.java)
+        Input(byteArray).use {
+            return serializer.readClassAndObject(it) as InternalResponse
+        }
     }
 
     private fun registerParameterClasses(parameters: List<Parameter>) {
@@ -92,7 +99,10 @@ internal class DefaultSerializer {
     }
 }
 
-internal data class InternalMessage constructor(val functionId: String, val parameters: ArrayList<Parameter>) : Serializable {
+internal data class InternalMessage constructor(
+        override val functionId: String,
+        override val parameters: ArrayList<Parameter>
+) : Message {
     companion object {
         fun from(message: Message): InternalMessage {
             val noMetadataParameters = message.parameters.mapTo(ArrayList()) {
@@ -103,6 +113,4 @@ internal data class InternalMessage constructor(val functionId: String, val para
         }
     }
 }
-
-internal data class ReconstructedMessage(override val functionId: String, override val parameters: List<Parameter>): Message
 internal data class InternalResponse(override val returnType: ReturnType, override val returnValue: ReturnValue): Response

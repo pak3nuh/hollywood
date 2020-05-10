@@ -4,6 +4,7 @@ import pt.pak3nuh.hollywood.system.builder.SystemBuilder
 import pt.pakenuh.hollywood.sandbox.actor.ClinicActors
 import pt.pakenuh.hollywood.sandbox.actor.ClinicBinaryFactory
 import pt.pakenuh.hollywood.sandbox.actor.OwnerFactory
+import pt.pakenuh.hollywood.sandbox.actor.OwnerFactoryImpl
 import pt.pakenuh.hollywood.sandbox.actor.PetFactory
 import pt.pakenuh.hollywood.sandbox.actor.VetFactory
 import pt.pakenuh.hollywood.sandbox.clinic.PetClinic
@@ -28,7 +29,7 @@ fun createClinic(): PetClinic {
                 ClinicBinaryFactory(vets, props[ClinicActorsProperty])
             }
             .registerFactory(OwnerFactory::class) { _, _ ->
-                OwnerFactory(contactService)
+                OwnerFactoryImpl(contactService)
             }
             .registerFactory(PetFactory::class) { _, props ->
                 PetFactory(props[ClinicActorsProperty])

@@ -12,8 +12,12 @@ interface OwnerActor {
     suspend fun petReady()
 }
 
-class OwnerFactory(private val contactService: ContactService) : OwnerActorBaseFactory {
-    fun createOwner(ownerId: OwnerId): OwnerActor = OwnerActorImpl(ownerId, contactService)
+interface OwnerFactory: OwnerActorBaseFactory {
+    fun createOwner(ownerId: OwnerId): OwnerActor
+}
+
+class OwnerFactoryImpl(private val contactService: ContactService) : OwnerFactory {
+    override fun createOwner(ownerId: OwnerId): OwnerActor = OwnerActorImpl(ownerId, contactService)
 }
 
 private class OwnerActorImpl(

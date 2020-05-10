@@ -19,7 +19,8 @@ interface ActorProxy<T> {
     val delegate: T
 
     /**
-     * A unique ID for each actor.
+     * A unique ID for each actor. If provided by the user, the uniqueness should be guaranteed within
+     * the same actor interface.
      */
     val actorId: String
 }

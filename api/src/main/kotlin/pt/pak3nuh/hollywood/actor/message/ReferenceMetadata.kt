@@ -8,16 +8,25 @@ import kotlin.reflect.KClass
  */
 interface ReferenceMetadata
 
-interface KClassMetadata: ReferenceMetadata {
+/**
+ * Metadata attached with a [KClass] definition.
+ */
+interface KClassMetadata : ReferenceMetadata {
     val kClass: KClass<*>
 }
 
-data class KClassMetadataImpl(val jvmClassName: String, override val kClass: KClass<*>) : KClassMetadata {
-    constructor(kClass: KClass<*>): this(jvmClassName(kClass), kClass)
-}
+@Suppress("FunctionName")
+fun KClassMetadata(kClass: KClass<*>): KClassMetadata = KClassMetadataImpl(kClass)
 
-private fun jvmClassName(kClass: KClass<*>): String {
-    return requireNotNull(kClass.java.name) {
-        "Qualified name not present for $kClass. Please make sure that it a valid type for serialization."
+private data class KClassMetadataImpl(val jvmClassName: String, override val kClass: KClass<*>) : KClassMetadata {
+    constructor(kClass: KClass<*>) : this(jvmClassName(kClass), kClass)
+
+    private companion object {
+        fun jvmClassName(kClass: KClass<*>): String {
+            return requireNotNull(kClass.java.name) {
+                "Qualified name not present for $kClass. Please make sure that it a valid type for serialization."
+            }
+        }
     }
+
 }

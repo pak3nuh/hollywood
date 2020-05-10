@@ -2,13 +2,25 @@ package pt.pak3nuh.hollywood.actor.message
 
 import kotlin.reflect.KClass
 
+/**
+ * Message that encapsulates a function call. Much like function signatures, parameter order matter.
+ */
 interface Message {
+    /**
+     * Unique identifier for a function within an actor interface.
+     */
     val functionId: String
     val parameters: List<Parameter>
 }
 
-
+/**
+ * Builder to create [Message] instances.
+ */
 interface MessageBuilder {
+    /**
+     * Starts a scope for defining parameters.
+     * @see ParameterScope
+     */
     fun parameters(block: ParameterScope.() -> Unit): MessageBuilder
     fun build(functionName: String): Message
 }

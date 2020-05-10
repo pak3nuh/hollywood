@@ -2,7 +2,14 @@ package pt.pak3nuh.hollywood.system.actor.message
 
 import kotlin.reflect.KClass
 
-// todo should this be part of the public API? if any of the details should be available for custom proxies than yes
+// todo make this an implementation detail
+/*
+ids can be generated on the code generator, and made public constants, then consumers can use the exposed
+ids, don't needing to know how they are build. one less public dependency
+build the ids on a separate file, so deletion of the generated proxy can be performed if needed.
+message builder must be changed to receive the id, and not build it.
+fixed on HWD-017
+*/
 internal class FunctionSignatureBuilder {
 
     private val parcels = mutableListOf<String>()

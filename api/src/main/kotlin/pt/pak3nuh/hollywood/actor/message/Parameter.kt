@@ -2,17 +2,23 @@ package pt.pak3nuh.hollywood.actor.message
 
 import kotlin.reflect.KClass
 
+/**
+ * A function parameter
+ */
 sealed class Parameter {
     abstract val name: String
 }
 
+/**
+ * Any parameter that can be represented by an object reference. It includes any nullable type and boxed primitives.
+ */
 data class ReferenceParameter(
         override val name: String,
         val value: Any?,
         val metadata: ReferenceMetadata?
 ): Parameter() {
     constructor(name: String, value: Any): this(name, value::class, value)
-    constructor(name: String, kclass: KClass<*>, value: Any?): this(name, value, KClassMetadataImpl(kclass))
+    constructor(name: String, kclass: KClass<*>, value: Any?): this(name, value, KClassMetadata(kclass))
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

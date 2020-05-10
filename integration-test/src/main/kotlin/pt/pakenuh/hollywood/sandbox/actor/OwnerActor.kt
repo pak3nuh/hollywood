@@ -3,6 +3,7 @@ package pt.pakenuh.hollywood.sandbox.actor
 import pt.pak3nuh.hollywood.processor.Actor
 import pt.pakenuh.hollywood.sandbox.clinic.ExamResult
 import pt.pakenuh.hollywood.sandbox.clinic.OwnerContactResult
+import pt.pakenuh.hollywood.sandbox.owner.ContactService
 import pt.pakenuh.hollywood.sandbox.owner.OwnerId
 
 @Actor
@@ -11,33 +12,25 @@ interface OwnerActor {
     suspend fun petReady()
 }
 
-class OwnerFactory(private val clinicActors: ClinicActors) : OwnerActorBaseFactory {
-    fun createOwner(ownerId: OwnerId): OwnerActor = OwnerActorImpl(clinicActors, ownerId)
+interface OwnerFactory: OwnerActorBaseFactory {
+    fun createOwner(ownerId: OwnerId): OwnerActor
 }
 
-data class OwnerContacts(
-        val updateContact: (ExamResult, Treatment) -> OwnerContactResult,
-        val readyContact: suspend () -> Unit
-)
+class OwnerFactoryImpl(private val contactService: ContactService) : OwnerFactory {
+    override fun createOwner(ownerId: OwnerId): OwnerActor = OwnerActorImpl(ownerId, contactService)
+}
 
-private class OwnerActorImpl(clinicActors: ClinicActors, private val ownerId: OwnerId) : OwnerActor {
-
-    private val clinicActor = clinicActors.getClinic()
-    private var contacts: OwnerContacts? = null
+private class OwnerActorImpl(
+        private val ownerId: OwnerId,
+        private val contactService: ContactService
+) : OwnerActor {
 
     override suspend fun contact(result: ExamResult, treatment: Treatment): OwnerContactResult {
-        return getOwnerContacts().updateContact(result, treatment)
+        return contactService.updateContact(ownerId, result, treatment)
     }
 
     override suspend fun petReady() {
-        getOwnerContacts().readyContact()
-    }
-
-    private suspend fun getOwnerContacts(): OwnerContacts {
-        if (contacts == null) {
-            contacts = clinicActor.getLatestOwnerContacts(ownerId)
-        }
-        return contacts!!
+        contactService.readyContact(ownerId)
     }
 
 }

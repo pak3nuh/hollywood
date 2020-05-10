@@ -28,7 +28,7 @@ features before the user gets the system.
 val dependency = IoC.get("dependency name")
 val actorSystem = SystemBuilder()
         .registerFactory(ClinicFactory::class) { actorSystem, buildProperties ->
-            ClinicFactory(dependency)
+            ClinicFactoryImpl(dependency)
         }
         .build()
 ```
@@ -42,7 +42,7 @@ interface Vet {
     suspend fun checkPet(pet: Pet): CheckResult
 }
 
-class MyVet: Vet {
+class VetImpl: Vet {
     override suspend fun checkPet(pet: Pet): CheckResult {
         ...
     }
@@ -50,18 +50,21 @@ class MyVet: Vet {
 ```
 
 Once compilation kicks in a proxy class and a factory interface will be generated. Generated type names are the
-actor FQCN sufixed by `Proxy` and `FactoryBase`.
+actor FQCN sufixed by `Proxy` and `BaseFactory`.
 
 Then implement a factory that provides instances of the actor implementation:
 ```kotlin
-class VetFactory: VetBaseFactory {
-    fun createVet(): Vet = MyVet()
+interface VetFactory: VetBaseFactory {
+    fun createVet(): Vet
+}
+class VetFactoryImpl: VerFactory {
+    override fun createVet(): Vet = VetImpl()
 }
 ```
 
 Once the system is build is possible to create actor instances
 ```kotlin
-val actor = actorSystem.factoryRepository.getOrCreateActor(VetFactory::class) { factory ->
+val actor = actorSystem.actorManager.getOrCreateActor(VetFactory::class) { factory ->
     factory.createVet()
 }
 actor.sayHello()
@@ -80,7 +83,7 @@ val actorSystem = SystemBuilder()
             ClinicActors(actorSystem.actorManager)
         }
         .registerFactory(ClinicFactory::class) { actorSystem, buildProperties ->
-            ClinicFactory(buildProperties[ClinicActorsProperty])
+            ClinicFactoryImpl(buildProperties[ClinicActorsProperty])
         }
         .build()
 ```

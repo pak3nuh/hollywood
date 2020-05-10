@@ -2,6 +2,7 @@ package pt.pak3nuh.hollywood.system.actor.message
 
 import kotlin.reflect.KClass
 
+// todo should this be part of the public API? if any of the details should be available for custom proxies than yes
 internal class FunctionSignatureBuilder {
 
     private val parcels = mutableListOf<String>()

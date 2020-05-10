@@ -8,7 +8,7 @@ import pt.pakenuh.hollywood.sandbox.vet.Vet
 class ClinicActors(private val actorManager: ActorManager) {
 
     fun getClinic(): ClinicActor {
-        return actorManager.getOrCreateActor(ClinicActor.CLINIC_ID, ClinicFactory::class) { it.createClinic() }
+        return actorManager.getOrCreateActor(ClinicActor.CLINIC_ID, ClinicBinaryFactory::class) { it.createClinic() }
     }
 
     fun getVet(vet: Vet): VetActor {

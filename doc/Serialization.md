@@ -18,3 +18,9 @@ Although these features are available, it will prefer to use simple reflection b
 creative.
 
 Needless to say, this is the least performant of all serializers.
+
+### Object definitions
+
+**Special attention** should be placed on serializing _object definitions_. Since this are
+kotlin constructs, some serializers will attempt to reproduce the same structure, but
+will not be the same instance. Enums shall be used instead on _object definitions_.

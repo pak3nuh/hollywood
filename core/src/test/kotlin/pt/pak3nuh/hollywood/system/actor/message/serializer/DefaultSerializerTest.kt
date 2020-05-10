@@ -66,7 +66,7 @@ internal class DefaultSerializerTest {
 
     private fun serde(testMessage: TestMessage): TestMessage {
         val asBytes = serializer.serialize(testMessage)
-        val moshiMessage = serializer.deserialize(asBytes)
+        val moshiMessage = serializer.deserializeMessage(asBytes)
         return TestMessage(moshiMessage.functionId, moshiMessage.parameters)
     }
 }

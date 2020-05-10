@@ -8,6 +8,7 @@ import org.objenesis.strategy.StdInstantiatorStrategy
 import pt.pak3nuh.hollywood.actor.message.BooleanParameter
 import pt.pak3nuh.hollywood.actor.message.ByteParameter
 import pt.pak3nuh.hollywood.actor.message.DoubleParameter
+import pt.pak3nuh.hollywood.actor.message.ExceptionReturn
 import pt.pak3nuh.hollywood.actor.message.FloatParameter
 import pt.pak3nuh.hollywood.actor.message.IntParameter
 import pt.pak3nuh.hollywood.actor.message.KClassMetadata
@@ -15,9 +16,13 @@ import pt.pak3nuh.hollywood.actor.message.LongParameter
 import pt.pak3nuh.hollywood.actor.message.Message
 import pt.pak3nuh.hollywood.actor.message.Parameter
 import pt.pak3nuh.hollywood.actor.message.ReferenceParameter
+import pt.pak3nuh.hollywood.actor.message.Response
+import pt.pak3nuh.hollywood.actor.message.ReturnType
+import pt.pak3nuh.hollywood.actor.message.ReturnValue
 import pt.pak3nuh.hollywood.actor.message.ShortParameter
+import pt.pak3nuh.hollywood.actor.message.UnitReturn
+import pt.pak3nuh.hollywood.actor.message.ValueReturn
 import java.io.ByteArrayOutputStream
-import java.io.Serializable
 
 internal class DefaultSerializer {
 
@@ -26,6 +31,7 @@ internal class DefaultSerializer {
     init {
         // First tries reflection, then gets creative with objenesis
         serializer.instantiatorStrategy = DefaultInstantiatorStrategy(StdInstantiatorStrategy())
+        serializer.isRegistrationRequired = false // security risk of serialized class names but, oh well
         serializer.register(InternalMessage::class.java)
         // for no metadata parameters
         serializer.register(ArrayList::class.java)
@@ -37,14 +43,48 @@ internal class DefaultSerializer {
         serializer.register(LongParameter::class.java)
         serializer.register(FloatParameter::class.java)
         serializer.register(DoubleParameter::class.java)
+
+        serializer.register(ReturnType::class.java)
+        serializer.register(InternalResponse::class.java)
+        serializer.register(UnitReturn::class.java)
+        serializer.register(ValueReturn::class.java)
+        serializer.register(ExceptionReturn::class.java)
     }
 
     fun serialize(message: Message): ByteArray {
         registerParameterClasses(message.parameters)
         val internalMessage = InternalMessage.from(message)
-        val output = Output(ByteArrayOutputStream())
-        serializer.writeObject(output, internalMessage)
-        return output.toBytes()
+        ByteArrayOutputStream().use { stream ->
+            Output(stream).use { output ->
+                serializer.writeClassAndObject(output, internalMessage)
+                output.flush()
+                return stream.toByteArray()
+            }
+        }
+
+    }
+
+    fun serialize(response: Response): ByteArray {
+        ByteArrayOutputStream().use { stream ->
+            Output(stream).use { output ->
+                val internal = InternalResponse(response.returnType, response.returnValue)
+                serializer.writeClassAndObject(output, internal)
+                output.flush()
+                return stream.toByteArray()
+            }
+        }
+    }
+
+    fun deserializeMessage(byteArray: ByteArray): Message {
+        Input(byteArray).use {
+            return serializer.readClassAndObject(it) as InternalMessage
+        }
+    }
+
+    fun deserializeResponse(byteArray: ByteArray): Response {
+        Input(byteArray).use {
+            return serializer.readClassAndObject(it) as InternalResponse
+        }
     }
 
     private fun registerParameterClasses(parameters: List<Parameter>) {
@@ -57,13 +97,12 @@ internal class DefaultSerializer {
                     serializer.register(it.kClass.java)
                 }
     }
-
-    fun deserialize(byteArray: ByteArray): InternalMessage {
-        return serializer.readObject(Input(byteArray), InternalMessage::class.java)
-    }
 }
 
-internal data class InternalMessage constructor(val functionId: String, val parameters: ArrayList<Parameter>) : Serializable {
+internal data class InternalMessage constructor(
+        override val functionId: String,
+        override val parameters: ArrayList<Parameter>
+) : Message {
     companion object {
         fun from(message: Message): InternalMessage {
             val noMetadataParameters = message.parameters.mapTo(ArrayList()) {
@@ -74,3 +113,4 @@ internal data class InternalMessage constructor(val functionId: String, val para
         }
     }
 }
+internal data class InternalResponse(override val returnType: ReturnType, override val returnValue: ReturnValue): Response

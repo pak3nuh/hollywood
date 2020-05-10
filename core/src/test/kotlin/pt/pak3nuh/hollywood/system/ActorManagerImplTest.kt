@@ -8,7 +8,7 @@ import assertk.assertions.isNull
 import assertk.assertions.isSameAs
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import pt.pak3nuh.hollywood.system.actor.message.serializer.NoOpSerializer
+import pt.pak3nuh.hollywood.system.actor.message.serializer.NoOpSerde
 import java.util.concurrent.CompletableFuture
 import kotlin.concurrent.thread
 
@@ -17,7 +17,7 @@ internal class ActorManagerImplTest {
     private val greeterFactory = GreeterFactory()
     private val dogFactory = DogFactory()
     private val repo = simpleRepository(greeterFactory, dogFactory)
-    private val manager = ActorManagerImpl(repo, NoOpSerializer())
+    private val manager = ActorManagerImpl(repo, NoOpSerde(), NoOpSerde())
 
     @Test
     internal fun `should always create actor`() {

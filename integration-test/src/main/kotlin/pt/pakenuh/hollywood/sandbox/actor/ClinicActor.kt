@@ -2,36 +2,37 @@ package pt.pakenuh.hollywood.sandbox.actor
 
 import kotlinx.coroutines.CompletableJob
 import kotlinx.coroutines.Job
+import pt.pak3nuh.hollywood.actor.ActorFactory
 import pt.pak3nuh.hollywood.actor.proxy.ActorProxyBase
 import pt.pak3nuh.hollywood.actor.proxy.ProxyConfiguration
 import pt.pak3nuh.hollywood.processor.Actor
 import pt.pak3nuh.hollywood.system.ActorSystem
 import pt.pakenuh.hollywood.sandbox.Loggers
 import pt.pakenuh.hollywood.sandbox.PetClinicException
+import pt.pakenuh.hollywood.sandbox.actor.proxy.ClinicBinaryProxy
 import pt.pakenuh.hollywood.sandbox.clinic.Exam
 import pt.pakenuh.hollywood.sandbox.clinic.ExamResult
 import pt.pakenuh.hollywood.sandbox.clinic.NokResult
 import pt.pakenuh.hollywood.sandbox.clinic.OkResult
 import pt.pakenuh.hollywood.sandbox.clinic.Receipt
+import pt.pakenuh.hollywood.sandbox.coroutine.TestScope
 import pt.pakenuh.hollywood.sandbox.owner.CreditCard
-import pt.pakenuh.hollywood.sandbox.owner.OwnerId
 import pt.pakenuh.hollywood.sandbox.pet.Pet
 import pt.pakenuh.hollywood.sandbox.pet.PetId
 import pt.pakenuh.hollywood.sandbox.vet.Vet
+import kotlin.reflect.KClass
 
 open class CustomProxy<T>(delegate: T, config: ProxyConfiguration) : ActorProxyBase<T>(delegate, config)
 
 @Actor(CustomProxy::class)
 interface ClinicActor {
-    suspend fun checkinPet(pet: Pet, contacts: OwnerContacts)
+    suspend fun checkinPet(pet: Pet)
     suspend fun checkoutPet(petId: PetId, creditCard: CreditCard): Receipt
     suspend fun petReady(pet: Pet)
     suspend fun orderExam(pet: Pet, exam: Exam): ExamResult
     suspend fun getPetToSee(petId: PetId): Pet
     suspend fun getPets(): List<PetId>
     suspend fun waitClosing()
-    suspend fun getOwnerContact(petId: PetId): OwnerContacts
-    suspend fun getLatestOwnerContacts(ownerId: OwnerId): OwnerContacts
 
     companion object {
         const val CLINIC_ID = "clinic unique id"
@@ -42,18 +43,26 @@ class ClinicFactory(private val vets: List<Vet>, private val actors: ClinicActor
     fun createClinic(): ClinicActor = ClinicActorImpl(vets, actors)
 }
 
+class ClinicBinaryFactory(private val vets: List<Vet>, private val actors: ClinicActors) : ActorFactory<ClinicActor, ClinicBinaryProxy> {
+    override fun createProxy(delegate: ClinicActor, config: ProxyConfiguration): ClinicBinaryProxy = ClinicBinaryProxy(delegate, config)
+    override val actorKClass: KClass<ClinicActor> = ClinicActor::class
+    override val proxyKClass: KClass<ClinicBinaryProxy> = ClinicBinaryProxy::class
+
+    fun createClinic(): ClinicActor = ClinicActorImpl(vets, actors)
+}
+
 internal class ClinicActorImpl(private val vets: List<Vet>, private val actors: ClinicActors) : ClinicActor {
 
     private val pets = mutableMapOf<String, PetInObservation>()
-    private val job: CompletableJob = Job()
+    private val job: CompletableJob = Job(TestScope.job)
     private val logger = Loggers.getLogger<ClinicActorImpl>()
 
-    override suspend fun checkinPet(pet: Pet, contacts: OwnerContacts) {
+    override suspend fun checkinPet(pet: Pet) {
         val firstAvailableVet = vets.firstOrNull {
             actors.getVet(it).trySchedule(pet)
         } ?: throw PetClinicException("No vets available")
 
-        pets[pet.petId.registryId] = PetInObservation(pet, contacts, firstAvailableVet)
+        pets[pet.petId.registryId] = PetInObservation(pet, firstAvailableVet)
         return
     }
 
@@ -109,24 +118,12 @@ internal class ClinicActorImpl(private val vets: List<Vet>, private val actors: 
         job.join()
     }
 
-    override suspend fun getOwnerContact(petId: PetId): OwnerContacts {
-        return requirePet(petId).contacts
-    }
-
-    override suspend fun getLatestOwnerContacts(ownerId: OwnerId): OwnerContacts {
-        return pets.asSequence()
-                .filter { it.value.pet.petId.ownerId == ownerId }
-                .map { it.value.contacts }
-                .first()
-    }
-
     private fun requirePet(petId: PetId): PetInObservation = pets[petId.registryId]
             ?: throw PetClinicException("Unknown pet")
 }
 
 private data class PetInObservation(
         val pet: Pet,
-        val contacts: OwnerContacts,
         val vet: Vet,
         var state: State = State.WAITING_VET,
         val exams: MutableList<Exam> = ArrayList(),
@@ -142,4 +139,4 @@ private data class PetInObservation(
 }
 
 internal fun ActorSystem.getPetClinic(): ClinicActor =
-        actorManager.getOrCreateActor(ClinicActor.CLINIC_ID, ClinicFactory::class, ClinicFactory::createClinic)
+        actorManager.getOrCreateActor(ClinicActor.CLINIC_ID, ClinicBinaryFactory::class, ClinicBinaryFactory::createClinic)

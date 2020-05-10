@@ -1,13 +1,12 @@
 package pt.pak3nuh.hollywood.actor.message
 
-import kotlinx.coroutines.CompletableDeferred
 import kotlin.reflect.KClass
 
 interface Message {
     val functionId: String
     val parameters: List<Parameter>
-    val returnValue: CompletableDeferred<ReturnValue>
 }
+
 
 interface MessageBuilder {
     fun parameters(block: ParameterScope.() -> Unit): MessageBuilder

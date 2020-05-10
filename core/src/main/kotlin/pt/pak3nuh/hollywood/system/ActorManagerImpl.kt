@@ -2,6 +2,7 @@ package pt.pak3nuh.hollywood.system
 
 import pt.pak3nuh.hollywood.actor.ActorFactory
 import pt.pak3nuh.hollywood.actor.message.MessageBuilder
+import pt.pak3nuh.hollywood.actor.message.serializer.Deserializer
 import pt.pak3nuh.hollywood.actor.message.serializer.Serializer
 import pt.pak3nuh.hollywood.actor.proxy.ActorProxy
 import pt.pak3nuh.hollywood.actor.proxy.ProxyConfiguration
@@ -15,7 +16,8 @@ import kotlin.reflect.full.cast
 
 class ActorManagerImpl(
         private val factoryRepository: FactoryRepository,
-        private val serializer: Serializer
+        private val serializer: Serializer,
+        private val deserializer: Deserializer
 ) : ActorManager {
 
     private val referenceQueue = ReferenceQueue<ActorProxy<*>>()
@@ -40,7 +42,7 @@ class ActorManagerImpl(
                 }
                 check(!factory.proxyKClass.isInstance(actorInstance)) { "Actor created can't be a proxy" }
                 // creates proxy
-                val proxy = factory.createProxy(actorInstance, Configuration(internalActorId, serializer))
+                val proxy = factory.createProxy(actorInstance, Configuration(internalActorId, serializer, deserializer))
                 check(actorInstance::class != proxy::class) { "Actor and proxy have the same type" }
                 proxy
             }
@@ -103,7 +105,11 @@ class ActorManagerImpl(
 
 }
 
-private class Configuration(private val internalActorId: InternalActorId, override val serializer: Serializer) : ProxyConfiguration {
+private class Configuration(
+        private val internalActorId: InternalActorId,
+        override val serializer: Serializer,
+        override val deserializer: Deserializer
+) : ProxyConfiguration {
     override val actorId: String
         get() = internalActorId.fullActorId
 

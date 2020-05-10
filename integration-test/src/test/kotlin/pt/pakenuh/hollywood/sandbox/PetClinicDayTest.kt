@@ -3,10 +3,11 @@ package pt.pakenuh.hollywood.sandbox
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import pt.pakenuh.hollywood.sandbox.actor.OwnerContacts
 import pt.pakenuh.hollywood.sandbox.clinic.OwnerContactResult
 import pt.pakenuh.hollywood.sandbox.clinic.PetClinic
+import pt.pakenuh.hollywood.sandbox.coroutine.TestScope
 import pt.pakenuh.hollywood.sandbox.owner.CreditCard
+import pt.pakenuh.hollywood.sandbox.owner.OwnerContacts
 import pt.pakenuh.hollywood.sandbox.owner.OwnerId
 import pt.pakenuh.hollywood.sandbox.pet.Pet
 import pt.pakenuh.hollywood.sandbox.pet.PetId
@@ -17,7 +18,7 @@ class PetClinicDayTest {
     @Test
     fun petClinicDay() {
         val petClinic = createClinic()
-        runBlocking {
+        runBlocking(context = TestScope.coroutineContext) {
             startDay(petClinic)
             petClinic.waitClosing()
             assertTrue(petClinic.currentPets().isEmpty())

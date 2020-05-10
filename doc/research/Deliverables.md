@@ -26,7 +26,7 @@
 
 ## V0.1.1
 
-- Implement the serialization strategies
+- Implement one serialization strategy. The most versatile one.
 - Make proxy prototype that works with serialized messages
   - This is not mailboxes
   - Introduce a proxy exclusive endpoint where all inbound communication flows
@@ -34,7 +34,12 @@
 ## V0.1.2
 
 - Implements serialization validations on the code generator
-- Change code generation to provide proxies with serialized message comunication
+- Change code generation to provide proxies with serialized message communication
+
+## V0.1.3
+
+- Implements the remaining two serialization strategies
+- Change the code generator to use the other serialization strategies
 
 ## V0.2.0
 

@@ -30,8 +30,19 @@ Each message should encapsulate the minimum set of information required to make 
 function call. It should be:
 - The function id (resistant to changes like reordering, but not schema changes)
 - The function parameters in the order they are defined
-- A Deferred instance to wait for the result, which may result in an exception. This completion
-handler will not be serialized.
+
+#### Function ids
+
+A function id should have almost the same semantics of a function signature. Within the context of
+the actor system, it should identify uniquely a function defined within an actor interface.
+
+The actual details of that specification aren't public by design, to maintain some flexibility
+by the library maintainers, but it's contract should be enforced by entities that build proxies 
+(being automatic or custom), and the entities that create 
+[Messages](../api/src/main/kotlin/pt/pak3nuh/hollywood/actor/message/Message.kt) instances.
+
+For details of that contract, check [this class](../core/src/main/kotlin/pt/pak3nuh/hollywood/system/actor/message/FunctionSignatureBuilder.kt). 
+Be aware relying on it can cause breaking changes between versions.
 
 ### Message versioning
 

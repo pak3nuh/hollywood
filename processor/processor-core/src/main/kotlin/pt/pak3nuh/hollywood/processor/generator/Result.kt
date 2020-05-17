@@ -7,13 +7,31 @@ import com.squareup.kotlinpoet.TypeSpec
 
 sealed class Result
 
-class TypeResult(private val className: ClassName, private val typeSpec: TypeSpec) : Result() {
-    fun toSourceFile(): SourceFile {
+sealed class Writer: Result() {
+    abstract fun toWriter(): FileWriter
+}
+
+class Bundle(private val types: List<TypeResult>): Writer() {
+    override fun toWriter(): FileWriter {
+        return SourceBundle(types.map(TypeResult::toWriter))
+    }
+}
+
+class TypeResult(private val className: ClassName, private val typeSpec: TypeSpec) : Writer() {
+    override fun toWriter(): FileWriter {
         val fileSpec = FileSpec.get(className.packageName, typeSpec)
         return SourceFile(fileSpec)
     }
 }
 
-class MethodResult(val funSpec: FunSpec) : Result()
+class MethodResult(val funSpec: FunSpec, val funSignature: FunSignature) : Result() {
+
+    /**
+     * @param symbolName A valid kotlin symbol for a constant
+     * @param value The symbol value
+     */
+    data class FunSignature(val symbolName: String, val value: String)
+
+}
 
 object NoOpResult : Result()

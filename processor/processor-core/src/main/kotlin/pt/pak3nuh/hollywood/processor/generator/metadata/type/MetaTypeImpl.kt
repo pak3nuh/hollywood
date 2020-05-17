@@ -39,6 +39,17 @@ class MetaTypeImpl(
         return TypeVisitor(kmType.flags, KmVariance.INVARIANT, null).also(kmType::accept).typeName
     }
 
+    override fun equals(other: Any?): Boolean {
+        if (other == null || other !is MetaType) {
+            return false
+        }
+        return other.name == name
+    }
+
+    override fun hashCode(): Int {
+        return name.hashCode()
+    }
+
 }
 
 class TypeVisitor(

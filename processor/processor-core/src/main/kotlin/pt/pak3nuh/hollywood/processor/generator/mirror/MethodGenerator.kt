@@ -48,7 +48,8 @@ class MethodGenerator(
                 .addParameters(parameterSpecs)
                 .addCode(buildDelegateCall(context, methodName, returnType, parameterSpecs))
 
-        return MethodResult(builder.build())
+        // TODO
+        return MethodResult(builder.build(), error("TODO"))
     }
 
     private fun buildDelegateCall(context: GenerationContext, methodName: String, returnType: TypeMirror, parameterSpecs: List<ParameterSpec>): CodeBlock {

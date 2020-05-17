@@ -11,7 +11,7 @@ class ActorProxyGenerator(
         private val kotlinMetadataGenerator: FileGenerator
 ) : FileGenerator {
 
-    override fun generate(element: TypeElement, context: GenerationContext): SourceFile {
+    override fun generate(element: TypeElement, context: GenerationContext): FileWriter {
         require(element.kind == ElementKind.INTERFACE) {
             "Actor annotation can only be used on interfaces"
         }

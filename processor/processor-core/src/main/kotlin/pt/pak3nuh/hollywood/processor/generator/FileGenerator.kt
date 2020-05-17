@@ -6,15 +6,25 @@ import java.nio.file.Path
 import javax.lang.model.element.TypeElement
 
 interface FileGenerator {
-    fun generate(element: TypeElement, context: GenerationContext): SourceFile
+    fun generate(element: TypeElement, context: GenerationContext): FileWriter
 }
 
-class SourceFile(private val fileSpec: FileSpec) {
-    fun writeTo(folder: Path) {
+interface FileWriter {
+    fun writeTo(folder: Path)
+}
+
+class SourceFile(private val fileSpec: FileSpec): FileWriter {
+    override fun writeTo(folder: Path) {
         fileSpec.writeTo(folder)
     }
 
     override fun toString(): String {
         return "SourceFile(path=${fileSpec.packageName}.${fileSpec.name})"
+    }
+}
+
+class SourceBundle(private val files: List<FileWriter>): FileWriter {
+    override fun writeTo(folder: Path) {
+        files.forEach { it.writeTo(folder) }
     }
 }

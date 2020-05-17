@@ -22,7 +22,7 @@ interface MessageBuilder {
      * @see ParameterScope
      */
     fun parameters(block: ParameterScope.() -> Unit): MessageBuilder
-    fun build(functionName: String): Message
+    fun build(functionId: String): Message
 }
 
 interface ParameterScope {

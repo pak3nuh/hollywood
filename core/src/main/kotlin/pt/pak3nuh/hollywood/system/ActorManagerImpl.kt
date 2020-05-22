@@ -5,11 +5,12 @@ import pt.pak3nuh.hollywood.actor.message.MessageBuilder
 import pt.pak3nuh.hollywood.actor.message.serializer.Deserializer
 import pt.pak3nuh.hollywood.actor.message.serializer.Serializer
 import pt.pak3nuh.hollywood.actor.proxy.ActorProxy
+import pt.pak3nuh.hollywood.actor.proxy.ActorScope
 import pt.pak3nuh.hollywood.actor.proxy.ProxyConfiguration
 import pt.pak3nuh.hollywood.system.actor.message.createMessageBuilder
 import java.lang.ref.ReferenceQueue
 import java.lang.ref.WeakReference
-import java.util.UUID
+import java.util.*
 import java.util.concurrent.ConcurrentSkipListMap
 import kotlin.reflect.KClass
 import kotlin.reflect.full.cast
@@ -17,7 +18,8 @@ import kotlin.reflect.full.cast
 class ActorManagerImpl(
         private val factoryRepository: FactoryRepository,
         private val serializer: Serializer,
-        private val deserializer: Deserializer
+        private val deserializer: Deserializer,
+        private val actorScope: ActorScope
 ) : ActorManager {
 
     private val referenceQueue = ReferenceQueue<ActorProxy<*>>()
@@ -42,7 +44,7 @@ class ActorManagerImpl(
                 }
                 check(!factory.proxyKClass.isInstance(actorInstance)) { "Actor created can't be a proxy" }
                 // creates proxy
-                val proxy = factory.createProxy(actorInstance, Configuration(internalActorId, serializer, deserializer))
+                val proxy = factory.createProxy(actorInstance, Configuration(internalActorId, serializer, deserializer, actorScope))
                 check(actorInstance::class != proxy::class) { "Actor and proxy have the same type" }
                 proxy
             }
@@ -108,7 +110,8 @@ class ActorManagerImpl(
 private class Configuration(
         private val internalActorId: InternalActorId,
         override val serializer: Serializer,
-        override val deserializer: Deserializer
+        override val deserializer: Deserializer,
+        override val scope: ActorScope
 ) : ProxyConfiguration {
     override val actorId: String
         get() = internalActorId.fullActorId

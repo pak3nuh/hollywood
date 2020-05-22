@@ -15,17 +15,18 @@ object WellKnownTypes {
     val unitType: MetaType = WKType(Unit::class, UNIT)
 
     val boolean: MetaType = WKType(Boolean::class, BOOLEAN)
-    val byte: MetaType = WKType(Boolean::class, BYTE)
-    val short: MetaType = WKType(Boolean::class, SHORT)
-    val int: MetaType = WKType(Boolean::class, INT)
-    val float: MetaType = WKType(Boolean::class, FLOAT)
-    val long: MetaType = WKType(Boolean::class, LONG)
-    val double: MetaType = WKType(Boolean::class, DOUBLE)
+    val byte: MetaType = WKType(Byte::class, BYTE)
+    val short: MetaType = WKType(Short::class, SHORT)
+    val int: MetaType = WKType(Int::class, INT)
+    val float: MetaType = WKType(Float::class, FLOAT)
+    val long: MetaType = WKType(Long::class, LONG)
+    val double: MetaType = WKType(Double::class, DOUBLE)
 }
 
 private class WKType(kClass: KClass<*>, private val typeName: TypeName) : MetaType {
 
     override val name: String = kClass.qualifiedName!!
+    override val isArray: Boolean = false
 
     override fun equals(other: Any?): Boolean {
         if (other == null || other !is MetaType) {

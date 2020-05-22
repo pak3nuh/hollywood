@@ -35,6 +35,17 @@ class MetaTypeImpl(
         }
     }
 
+    override val isArray: Boolean
+        get() {
+            return when (val classifier = kmType.classifier) {
+                is KmClassifier.Class -> {
+                    // todo improve
+                    Regex("kotlin\\.(.*)Array").matches(classifier.name)
+                }
+                else -> false
+            }
+        }
+
     override fun asTypeName(): TypeName {
         return TypeVisitor(kmType.flags, KmVariance.INVARIANT, null).also(kmType::accept).typeName
     }

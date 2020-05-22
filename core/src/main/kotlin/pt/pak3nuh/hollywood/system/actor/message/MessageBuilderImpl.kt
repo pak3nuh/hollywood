@@ -36,15 +36,8 @@ private class Scope : ParameterScope {
     val parameterList: List<Parameter>
         get() = parameters.toList()
 
-    override fun param(name: String, kClass: KClass<*>, isNull: Boolean, value: Any?) {
-        val clazz = kClass.java
-        require(!clazz.isArray) { "Argument is an array, please use the [arrayParam]" }
+    override fun param(name: String, kClass: KClass<*>, value: Any?) {
         addParameter(ReferenceParameter(name, kClass, value))
-    }
-
-    override fun arrayParam(name: String, component: KClass<*>, value: Any?, nullable: BooleanArray) {
-        require(nullable.size >= 2) { "Nullable must contain at least the array and component null values" }
-        addParameter(ReferenceParameter(name, value, ArrayMetadata(component)))
     }
 
     override fun param(name: String, value: Byte) {

@@ -1,5 +1,6 @@
 package pt.pak3nuh.hollywood.actor.proxy
 
+import kotlinx.coroutines.CoroutineScope
 import pt.pak3nuh.hollywood.actor.message.MessageBuilder
 import pt.pak3nuh.hollywood.actor.message.serializer.Deserializer
 import pt.pak3nuh.hollywood.actor.message.serializer.Serializer
@@ -32,5 +33,8 @@ interface ProxyConfiguration {
     val actorId: String
     val serializer: Serializer
     val deserializer: Deserializer
+    val scope: ActorScope
     fun newMessageBuilder(): MessageBuilder
 }
+
+interface ActorScope: CoroutineScope

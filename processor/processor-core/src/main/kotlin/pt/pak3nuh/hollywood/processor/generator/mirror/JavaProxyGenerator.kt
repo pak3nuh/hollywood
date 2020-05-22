@@ -8,7 +8,7 @@ class JavaProxyGenerator(
         private val methodGenerator: MethodVisitor
 ) : ProxyClassGenerator() {
 
-    override fun buildFunctions(typeElement: TypeElement, context: GenerationContext): List<MethodResult> {
+    override fun buildFunctions(typeElement: TypeElement, functionBuildContext: FunctionBuildContext, context: GenerationContext): List<MethodResult> {
         return typeElement.enclosedElements.asSequence()
                 .map { it.accept(methodGenerator, context) }
                 .filterIsInstance<MethodResult>()

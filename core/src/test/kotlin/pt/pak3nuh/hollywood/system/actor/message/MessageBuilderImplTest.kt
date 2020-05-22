@@ -29,7 +29,7 @@ internal class MessageBuilderImplTest {
     @Test
     internal fun `should retain parameter order`() {
         val message = builder.parameters {
-            param("p1", "reference", false)
+            param("p1", String::class, "reference")
             param("p2", 1.toByte())
             param("p3", true)
             param("p4", 2.toShort())
@@ -64,10 +64,10 @@ internal class MessageBuilderImplTest {
     @Test
     internal fun `should concatenate parameters on multiple calls`() {
         builder.parameters {
-            param("p1", "p1", false)
+            param("p1", String::class, "p1")
         }
         builder.parameters {
-            param("p2", "p2", false)
+            param("p2", String::class, "p2")
         }
         val message = builder.build("id")
         assertThat(message.parameters).containsExactly(
@@ -77,12 +77,10 @@ internal class MessageBuilderImplTest {
     }
 
     @Test
-    internal fun `should not allow arrays on reference params`() {
-        assertThrows<IllegalArgumentException> {
-            builder.parameters {
-                param("p1", arrayOf(""), false)
-            }
-        }
+    internal fun `should allow arrays on reference params`() {
+        builder.parameters {
+            param("p1", Array<String>::class, arrayOf(""))
+        }.build("id")
     }
 
 

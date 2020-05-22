@@ -7,6 +7,7 @@ import pt.pak3nuh.hollywood.system.ActorSystem
 import pt.pak3nuh.hollywood.system.AnyActorFactory
 import pt.pak3nuh.hollywood.system.FactoryRepositoryImpl
 import pt.pak3nuh.hollywood.system.SystemImpl
+import pt.pak3nuh.hollywood.system.actor.SystemScope
 import pt.pak3nuh.hollywood.system.actor.message.serializer.Deserializer
 import pt.pak3nuh.hollywood.system.actor.message.serializer.Serializer
 import kotlin.reflect.KClass
@@ -25,6 +26,11 @@ class SystemBuilder {
 
     private val factoryBuilderMap = mutableMapOf<KClass<out AnyActorFactory>, FactoryBuilder<AnyActorFactory>>()
     private val buildProperties = mutableMapOf<Property<out Any>, DeferredBuilder<Any>>()
+
+    /**
+     * Number of threads available in the actor system
+     */
+    var threadNumber: Int = 1
 
     /**
      * Registers a factory to be available in the actor system.
@@ -56,8 +62,9 @@ class SystemBuilder {
     fun build(): ActorSystem {
         check(factoryBuilderMap.isNotEmpty()) { "There must be at least one actor factory" }
 
+        val coroutineScope = SystemScope(threadNumber)
         val factoryMap = mutableMapOf<KClass<out AnyActorFactory>, AnyActorFactory>()
-        val actorSystem = SystemImpl(ActorManagerImpl(FactoryRepositoryImpl(factoryMap), Serializer(), Deserializer()))
+        val actorSystem = SystemImpl(ActorManagerImpl(FactoryRepositoryImpl(factoryMap), Serializer(), Deserializer(), coroutineScope))
         var systemBuilt = false
 
         val buildProperties = buildProperties.mapValues { it.value(actorSystem) }

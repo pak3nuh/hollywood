@@ -25,6 +25,8 @@ class ClassLiteralVisitor: KPoetVisitor {
     }
 
     override fun visit(typeName: KParameterizedTypeName) {
+        // arrays are reified
+        // type literals in kotlin must not be nullable and generics not reified
         if (typeName.typeName.isArray()) {
             result = typeName.typeName.copy(nullable = false)
         } else {

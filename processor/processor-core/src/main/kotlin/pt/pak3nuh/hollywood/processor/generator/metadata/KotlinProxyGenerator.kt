@@ -80,8 +80,6 @@ class KotlinProxyGenerator(
 
         builder.beginControlFlow("parameters")
         parameterSpecs.forEach {
-            // arrays are reified
-            // type literals in kotlin must not be nullable and generics not reified
             val literal = ClassLiteralVisitor().apply(it.type.asTypeName()::accept).result
             builder.addStatement("param(%S, %T::class, %L)", it.name, literal, it.name)
         }

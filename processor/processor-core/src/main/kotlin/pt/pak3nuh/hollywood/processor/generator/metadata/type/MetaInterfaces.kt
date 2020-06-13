@@ -30,7 +30,9 @@ interface MetaParameter {
 
 interface MetaType {
     val name: String
+    val isArray: Boolean
     // bound to Kotlin Poet to cut over engineering. can be abstracted if necessary
     fun asTypeName(): TypeName
+    fun asRawTypeName(): TypeName
 }
 

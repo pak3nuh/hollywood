@@ -1,8 +1,9 @@
 package pt.pakenuh.hollywood.sandbox
 
+import kotlinx.coroutines.Job
 import pt.pak3nuh.hollywood.system.builder.SystemBuilder
 import pt.pakenuh.hollywood.sandbox.actor.ClinicActors
-import pt.pakenuh.hollywood.sandbox.actor.ClinicBinaryFactory
+import pt.pakenuh.hollywood.sandbox.actor.ClinicFactory
 import pt.pakenuh.hollywood.sandbox.actor.OwnerFactory
 import pt.pakenuh.hollywood.sandbox.actor.OwnerFactoryImpl
 import pt.pakenuh.hollywood.sandbox.actor.PetFactory
@@ -22,11 +23,11 @@ fun createClinic(): PetClinic {
 
     val contactService = ContactService()
     val actorSystem = SystemBuilder()
-            .withProperty(ClinicActorsProperty) {
-                ClinicActors(it.actorManager)
-            }
-            .registerFactory(ClinicBinaryFactory::class) { _, props ->
-                ClinicBinaryFactory(vets, props[ClinicActorsProperty])
+            .withProperty(ClinicActorsProperty) { ClinicActors(it.actorManager) }
+            // fail fast job
+            .withProperty(MainJob) { Job(it.actorScope.mainJob) }
+            .registerFactory(ClinicFactory::class) { _, props ->
+                ClinicFactory(vets, props[ClinicActorsProperty], props[MainJob])
             }
             .registerFactory(OwnerFactory::class) { _, _ ->
                 OwnerFactoryImpl(contactService)
@@ -43,3 +44,4 @@ fun createClinic(): PetClinic {
 }
 
 object ClinicActorsProperty : SystemBuilder.Property<ClinicActors>()
+object MainJob: SystemBuilder.Property<Job>()

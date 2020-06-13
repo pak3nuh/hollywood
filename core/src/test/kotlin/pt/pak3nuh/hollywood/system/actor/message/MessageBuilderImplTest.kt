@@ -22,14 +22,14 @@ internal class MessageBuilderImplTest {
     @Test
     internal fun `should create messages with empty parameters`() {
         val message = builder.build("id")
-        assertThat(message.functionId).isEqualTo("id:")
+        assertThat(message.functionId).isEqualTo("id")
         assertThat(message.parameters).isEmpty()
     }
 
     @Test
     internal fun `should retain parameter order`() {
         val message = builder.parameters {
-            param("p1", "reference", false)
+            param("p1", String::class, "reference")
             param("p2", 1.toByte())
             param("p3", true)
             param("p4", 2.toShort())
@@ -39,7 +39,6 @@ internal class MessageBuilderImplTest {
             param("p8", 6.0)
         }.build("id")
 
-        assertThat(message.functionId).isEqualTo("id:Lkotlin.String;B;Z;S;I;J;F;D")
         assertThat(message.parameters).containsExactly(
                 ReferenceParameter("p1", "reference"),
                 ByteParameter("p2", 1),
@@ -65,10 +64,10 @@ internal class MessageBuilderImplTest {
     @Test
     internal fun `should concatenate parameters on multiple calls`() {
         builder.parameters {
-            param("p1", "p1", false)
+            param("p1", String::class, "p1")
         }
         builder.parameters {
-            param("p2", "p2", false)
+            param("p2", String::class, "p2")
         }
         val message = builder.build("id")
         assertThat(message.parameters).containsExactly(
@@ -78,35 +77,11 @@ internal class MessageBuilderImplTest {
     }
 
     @Test
-    internal fun `should not allow arrays on reference params`() {
-        assertThrows<IllegalArgumentException> {
-            builder.parameters {
-                param("p1", arrayOf(""), false)
-            }
-        }
+    internal fun `should allow arrays on reference params`() {
+        builder.parameters {
+            param("p1", Array<String>::class, arrayOf(""))
+        }.build("id")
     }
 
-    @Test
-    fun `should build an array matrix`() {
-        val message = builder.parameters {
-            arrayParam("p1", Int::class, null, false, false, false, false)
-        }.build("id")
-        assertThat(message.functionId).isEqualTo("id:[[[Lkotlin.Int]]]")
-    }
 
-    @Test
-    fun `should capture nullable arrays`() {
-        val message = builder.parameters {
-            arrayParam("p1", Int::class, null, true, false, true, false, true)
-        }.build("id")
-        assertThat(message.functionId).isEqualTo("id:[[[[Lkotlin.Int?]]?]]?")
-    }
-
-    @Test
-    internal fun `should work with primitive arrays`() {
-        val message = builder.parameters {
-            arrayParam("p1", Int::class, intArrayOf(1), true, false)
-        }.build("id")
-        assertThat(message.functionId).isEqualTo("id:[Lkotlin.Int]?")
-    }
 }

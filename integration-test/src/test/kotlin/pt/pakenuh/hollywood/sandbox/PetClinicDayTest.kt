@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import pt.pakenuh.hollywood.sandbox.clinic.OwnerContactResult
 import pt.pakenuh.hollywood.sandbox.clinic.PetClinic
-import pt.pakenuh.hollywood.sandbox.coroutine.TestScope
 import pt.pakenuh.hollywood.sandbox.owner.CreditCard
 import pt.pakenuh.hollywood.sandbox.owner.OwnerContacts
 import pt.pakenuh.hollywood.sandbox.owner.OwnerId
@@ -18,7 +17,7 @@ class PetClinicDayTest {
     @Test
     fun petClinicDay() {
         val petClinic = createClinic()
-        runBlocking(context = TestScope.coroutineContext) {
+        runBlocking(context = petClinic.actorScope.coroutineContext) {
             startDay(petClinic)
             petClinic.waitClosing()
             assertTrue(petClinic.currentPets().isEmpty())

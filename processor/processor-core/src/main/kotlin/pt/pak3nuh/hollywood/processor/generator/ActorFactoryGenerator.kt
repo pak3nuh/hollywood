@@ -19,8 +19,8 @@ import kotlin.reflect.KClass
 
 class ActorFactoryGenerator : FileGenerator, TypeElementVisitor() {
 
-    override fun generate(element: TypeElement, context: GenerationContext): SourceFile {
-        return visitType(element, context).toSourceFile()
+    override fun generate(element: TypeElement, context: GenerationContext): FileWriter {
+        return visitType(element, context).toWriter()
     }
 
     override fun visitType(typeElement: TypeElement, context: GenerationContext): TypeResult {

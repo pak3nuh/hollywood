@@ -1,12 +1,10 @@
 package pt.pakenuh.hollywood.sandbox.clinic
 
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import pt.pak3nuh.hollywood.system.ActorSystem
 import pt.pakenuh.hollywood.sandbox.Loggers
 import pt.pakenuh.hollywood.sandbox.actor.VetFactory
 import pt.pakenuh.hollywood.sandbox.actor.getPetClinic
-import pt.pakenuh.hollywood.sandbox.coroutine.TestScope
 import pt.pakenuh.hollywood.sandbox.owner.ContactService
 import pt.pakenuh.hollywood.sandbox.owner.CreditCard
 import pt.pakenuh.hollywood.sandbox.owner.OwnerContacts
@@ -17,12 +15,12 @@ import pt.pakenuh.hollywood.sandbox.vet.Vet
 class PetClinicImpl(
         actorSystem: ActorSystem,
         vets: List<Vet>,
-        private val contactService: ContactService,
-        private val coroutineScope: CoroutineScope = TestScope
+        private val contactService: ContactService
 ) : PetClinic {
 
     private val petClinicActor = actorSystem.getPetClinic()
     private val logger = Loggers.getLogger<PetClinicImpl>()
+    override val actorScope = actorSystem.actorScope
 
     init {
         vets.asSequence().map { vet ->
@@ -31,7 +29,7 @@ class PetClinicImpl(
                 it.createVet()
             }
         }.forEach {
-            coroutineScope.launch {
+            actorScope.launch {
                 logger.fine("Starting vet actor")
                 it.startWork()
             }
@@ -40,7 +38,7 @@ class PetClinicImpl(
 
     override suspend fun checkinPet(pet: Pet, contacts: OwnerContacts) {
         contactService.registerContact(pet.petId.ownerId, contacts)
-        coroutineScope.launch {
+        actorScope.launch {
             petClinicActor.checkinPet(pet)
         }
     }

@@ -17,4 +17,8 @@ private class MetaFunImpl(val kmFunction: KmFunction) : MetaFun {
         get() = kmFunction.name
 
     override val returnType: MetaType = MetaType(kmFunction.returnType, kmFunction.typeParameters)
+
+    override fun toString(): String {
+        return "Function $name"
+    }
 }

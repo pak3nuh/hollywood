@@ -16,20 +16,20 @@ interface TypeMappingActor {
     )
 
     suspend fun everyArrayType(
-            byteArray: ByteArray, booleanArray: BooleanArray, shortArray: ShortArray, intArray: IntArray,
-            longArray: LongArray, floatArray: FloatArray, doubleArray: DoubleArray, referenceArray: Array<String>,
+            byteArray: ByteArray?, booleanArray: BooleanArray, shortArray: ShortArray, intArray: IntArray,
+            longArray: LongArray, floatArray: FloatArray?, doubleArray: DoubleArray, referenceArray: Array<String>?,
             wrappedBooleanArray: Array<Boolean?>
     )
 
     suspend fun multiDimensionalArrays(string: Array<Array<String>>, int: Array<IntArray>, long: Array<LongArray>)
 
     suspend fun usualCollectionTypes(
-            list: List<String>, set: Set<String>, map: Map<String, String>
+            list: List<String>?, set: Set<String>, map: Map<String, String>
     )
 
-    suspend fun wildcardGeneric(generic: Generic<*>)
+    suspend fun wildcardGeneric(generic: Generic<*>?)
 
-    suspend fun supperBound(generic: Generic<in String>)
+    suspend fun supperBound(generic: Generic<in String?>)
 
     suspend fun extendsBound(generic: Generic<out String>)
 

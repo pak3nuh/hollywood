@@ -8,10 +8,12 @@ import com.squareup.kotlinpoet.ParameterSpec
 import pt.pak3nuh.hollywood.processor.generator.MethodResult
 import pt.pak3nuh.hollywood.processor.generator.MethodResult.FunSignature
 import pt.pak3nuh.hollywood.processor.generator.context.GenerationContext
+import pt.pak3nuh.hollywood.processor.generator.kpoet.accept
 import pt.pak3nuh.hollywood.processor.generator.metadata.type.MetaClass
 import pt.pak3nuh.hollywood.processor.generator.metadata.type.MetaFun
 import pt.pak3nuh.hollywood.processor.generator.metadata.type.MetaParameter
 import pt.pak3nuh.hollywood.processor.generator.metadata.type.WellKnownTypes
+import pt.pak3nuh.hollywood.processor.generator.metadata.type.visitor.ClassLiteralVisitor
 import pt.pak3nuh.hollywood.processor.generator.mirror.FunctionBuildContext
 import pt.pak3nuh.hollywood.processor.generator.mirror.ProxyClassGenerator
 import pt.pak3nuh.hollywood.processor.generator.util.FunctionSignatureBuilder
@@ -78,14 +80,10 @@ class KotlinProxyGenerator(
 
         builder.beginControlFlow("parameters")
         parameterSpecs.forEach {
-            if (it.type.isArray) {
-                // arrays are reified
-                builder.addStatement("param(%S, %L::class, %L)", it.name, it.type.asTypeName().toString(), it.name)
-            } else {
-                // type literals in kotlin must not be nullable and generics not reified
-                val paramRawType = it.type.asRawTypeName().copy(nullable = false)
-                builder.addStatement("param(%S, %L::class, %L)", it.name, paramRawType, it.name)
-            }
+            // arrays are reified
+            // type literals in kotlin must not be nullable and generics not reified
+            val literal = ClassLiteralVisitor().apply(it.type.asTypeName()::accept).result
+            builder.addStatement("param(%S, %T::class, %L)", it.name, literal, it.name)
         }
         builder.endControlFlow()
         builder.addStatement("build(%T.`%L`)", signaturesClassName, funSignature.symbolName)

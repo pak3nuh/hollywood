@@ -33,6 +33,8 @@ import pt.pak3nuh.hollywood.processor.generator.MethodResult
 import pt.pak3nuh.hollywood.processor.generator.TypeResult
 import pt.pak3nuh.hollywood.processor.generator.context.GenerationContext
 import pt.pak3nuh.hollywood.processor.generator.context.generationAnnotation
+import pt.pak3nuh.hollywood.processor.generator.kpoet.accept
+import pt.pak3nuh.hollywood.processor.generator.metadata.type.visitor.ClassLiteralVisitor
 import pt.pak3nuh.hollywood.processor.generator.mirror.visitor.TypeElementVisitor
 import pt.pak3nuh.hollywood.processor.generator.util.proxyName
 import javax.lang.model.element.ElementKind
@@ -109,9 +111,10 @@ abstract class ProxyClassGenerator : FileGenerator, TypeElementVisitor() {
                 val comma = if (idx == 0) "" else ","
                 val isArray = param.type.isArray()
                 val isNullable = param.type.isNullable
+                val literal = ClassLiteralVisitor().apply(param.type::accept).result
                 when {
-                    isArray && isNullable -> initializer.add("%L params.getArrayNullable(%S, %T::class)", comma, param.name, param.type)
-                    isArray && !isNullable -> initializer.add("%L params.getArray(%S, %T::class)", comma, param.name, param.type)
+                    isArray && isNullable -> initializer.add("%L params.getArrayNullable(%S, %T::class)", comma, param.name, literal)
+                    isArray && !isNullable -> initializer.add("%L params.getArray(%S, %T::class)", comma, param.name, literal)
                     !isArray && isNullable -> initializer.add("%L params.getObjectNullable(%S)", comma, param.name)
                     !isArray && !isNullable -> initializer.add("%L params.getObject(%S)", comma, param.name)
                 }

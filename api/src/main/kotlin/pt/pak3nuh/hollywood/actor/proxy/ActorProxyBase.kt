@@ -3,14 +3,21 @@ package pt.pak3nuh.hollywood.actor.proxy
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import pt.pak3nuh.hollywood.actor.message.BooleanParameter
+import pt.pak3nuh.hollywood.actor.message.ByteParameter
+import pt.pak3nuh.hollywood.actor.message.DoubleParameter
 import pt.pak3nuh.hollywood.actor.message.ExceptionResponse
 import pt.pak3nuh.hollywood.actor.message.ExceptionReturn
+import pt.pak3nuh.hollywood.actor.message.FloatParameter
+import pt.pak3nuh.hollywood.actor.message.IntParameter
+import pt.pak3nuh.hollywood.actor.message.LongParameter
 import pt.pak3nuh.hollywood.actor.message.Message
 import pt.pak3nuh.hollywood.actor.message.MessageBuilder
 import pt.pak3nuh.hollywood.actor.message.Parameter
 import pt.pak3nuh.hollywood.actor.message.ReferenceParameter
 import pt.pak3nuh.hollywood.actor.message.Response
 import pt.pak3nuh.hollywood.actor.message.ReturnType
+import pt.pak3nuh.hollywood.actor.message.ShortParameter
 import pt.pak3nuh.hollywood.actor.message.UnitResponse
 import pt.pak3nuh.hollywood.actor.message.ValueResponse
 import pt.pak3nuh.hollywood.actor.message.ValueReturn
@@ -136,6 +143,7 @@ class HandlerBuilder {
 }
 
 interface MsgParams {
+    // todo can be improved to avoid boxing and unboxing
     fun <T> getObject(name: String): T
     fun <T> getObjectNullable(name: String): T?
     fun <T: Any> getArray(name: String, kClass: KClass<T>): T
@@ -148,16 +156,24 @@ private class MsgParamsImpl(private val message: Message): MsgParams {
 
     @Suppress("UNCHECKED_CAST")
     override fun <T> getObjectNullable(name: String): T? {
-        val param = getParam(name)
-        return (param as ReferenceParameter).value as T?
+        return when (val param = getParam(name)) {
+            is ReferenceParameter -> param.value
+            is BooleanParameter -> param.value
+            is ByteParameter -> param.value
+            is ShortParameter -> param.value
+            is IntParameter -> param.value
+            is LongParameter -> param.value
+            is FloatParameter -> param.value
+            is DoubleParameter -> param.value
+        } as T?
     }
 
     override fun <T : Any> getArray(name: String, kClass: KClass<T>): T {
-        TODO("Not yet implemented")
+        return getObject(name)
     }
 
     override fun <T : Any> getArrayNullable(name: String, kClass: KClass<T>): T? {
-        TODO("Not yet implemented")
+        return getObjectNullable(name)
     }
 
     private fun getParam(name: String): Parameter {

@@ -2,14 +2,12 @@ package pt.pakenuh.hollywood.sandbox.actor
 
 import kotlinx.coroutines.CompletableJob
 import kotlinx.coroutines.Job
-import pt.pak3nuh.hollywood.actor.ActorFactory
 import pt.pak3nuh.hollywood.actor.proxy.ActorProxyBase
 import pt.pak3nuh.hollywood.actor.proxy.ProxyConfiguration
 import pt.pak3nuh.hollywood.processor.Actor
 import pt.pak3nuh.hollywood.system.ActorSystem
 import pt.pakenuh.hollywood.sandbox.Loggers
 import pt.pakenuh.hollywood.sandbox.PetClinicException
-import pt.pakenuh.hollywood.sandbox.actor.proxy.ClinicBinaryProxy
 import pt.pakenuh.hollywood.sandbox.clinic.Exam
 import pt.pakenuh.hollywood.sandbox.clinic.ExamResult
 import pt.pakenuh.hollywood.sandbox.clinic.NokResult
@@ -19,7 +17,6 @@ import pt.pakenuh.hollywood.sandbox.owner.CreditCard
 import pt.pakenuh.hollywood.sandbox.pet.Pet
 import pt.pakenuh.hollywood.sandbox.pet.PetId
 import pt.pakenuh.hollywood.sandbox.vet.Vet
-import kotlin.reflect.KClass
 
 abstract class CustomProxy<T>(delegate: T, config: ProxyConfiguration) : ActorProxyBase<T>(delegate, config)
 
@@ -39,14 +36,6 @@ interface ClinicActor {
 }
 
 class ClinicFactory(private val vets: List<Vet>, private val actors: ClinicActors, val parentJob: Job) : ClinicActorBaseFactory {
-    fun createClinic(): ClinicActor = ClinicActorImpl(vets, actors, parentJob)
-}
-
-class ClinicBinaryFactory(private val vets: List<Vet>, private val actors: ClinicActors, val parentJob: Job) : ActorFactory<ClinicActor, ClinicBinaryProxy> {
-    override fun createProxy(delegate: ClinicActor, config: ProxyConfiguration): ClinicBinaryProxy = ClinicBinaryProxy(delegate, config)
-    override val actorKClass: KClass<ClinicActor> = ClinicActor::class
-    override val proxyKClass: KClass<ClinicBinaryProxy> = ClinicBinaryProxy::class
-
     fun createClinic(): ClinicActor = ClinicActorImpl(vets, actors, parentJob)
 }
 

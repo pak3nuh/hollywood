@@ -15,7 +15,6 @@ import pt.pakenuh.hollywood.sandbox.clinic.ExamResult
 import pt.pakenuh.hollywood.sandbox.clinic.NokResult
 import pt.pakenuh.hollywood.sandbox.clinic.OkResult
 import pt.pakenuh.hollywood.sandbox.clinic.Receipt
-import pt.pakenuh.hollywood.sandbox.coroutine.TestScope
 import pt.pakenuh.hollywood.sandbox.owner.CreditCard
 import pt.pakenuh.hollywood.sandbox.pet.Pet
 import pt.pakenuh.hollywood.sandbox.pet.PetId
@@ -39,22 +38,22 @@ interface ClinicActor {
     }
 }
 
-class ClinicFactory(private val vets: List<Vet>, private val actors: ClinicActors) : ClinicActorBaseFactory {
-    fun createClinic(): ClinicActor = ClinicActorImpl(vets, actors)
+class ClinicFactory(private val vets: List<Vet>, private val actors: ClinicActors, val parentJob: Job) : ClinicActorBaseFactory {
+    fun createClinic(): ClinicActor = ClinicActorImpl(vets, actors, parentJob)
 }
 
-class ClinicBinaryFactory(private val vets: List<Vet>, private val actors: ClinicActors) : ActorFactory<ClinicActor, ClinicBinaryProxy> {
+class ClinicBinaryFactory(private val vets: List<Vet>, private val actors: ClinicActors, val parentJob: Job) : ActorFactory<ClinicActor, ClinicBinaryProxy> {
     override fun createProxy(delegate: ClinicActor, config: ProxyConfiguration): ClinicBinaryProxy = ClinicBinaryProxy(delegate, config)
     override val actorKClass: KClass<ClinicActor> = ClinicActor::class
     override val proxyKClass: KClass<ClinicBinaryProxy> = ClinicBinaryProxy::class
 
-    fun createClinic(): ClinicActor = ClinicActorImpl(vets, actors)
+    fun createClinic(): ClinicActor = ClinicActorImpl(vets, actors, parentJob)
 }
 
-internal class ClinicActorImpl(private val vets: List<Vet>, private val actors: ClinicActors) : ClinicActor {
+internal class ClinicActorImpl(private val vets: List<Vet>, private val actors: ClinicActors, parentJob: Job) : ClinicActor {
 
     private val pets = mutableMapOf<String, PetInObservation>()
-    private val job: CompletableJob = Job(TestScope.job)
+    private val job: CompletableJob = Job(parentJob)
     private val logger = Loggers.getLogger<ClinicActorImpl>()
 
     override suspend fun checkinPet(pet: Pet) {

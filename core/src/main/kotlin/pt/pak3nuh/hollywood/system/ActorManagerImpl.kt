@@ -19,7 +19,7 @@ class ActorManagerImpl(
         private val factoryRepository: FactoryRepository,
         private val serializer: Serializer,
         private val deserializer: Deserializer,
-        private val actorScope: ActorScope
+        val actorScope: ActorScope
 ) : ActorManager {
 
     private val referenceQueue = ReferenceQueue<ActorProxy<*>>()

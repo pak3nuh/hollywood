@@ -12,7 +12,7 @@ import kotlin.coroutines.CoroutineContext
 // todo docs
 class SystemScope(threadCount: Int) : ActorScope {
 
-    val mainJob = SupervisorJob()
+    override val mainJob = SupervisorJob()
     private val exHandler = CancellationExceptionHandler(mainJob)
     private val dispatcher = Executors.newFixedThreadPool(threadCount).asCoroutineDispatcher()
 

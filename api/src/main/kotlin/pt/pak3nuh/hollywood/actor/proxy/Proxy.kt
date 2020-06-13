@@ -1,6 +1,7 @@
 package pt.pak3nuh.hollywood.actor.proxy
 
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import pt.pak3nuh.hollywood.actor.message.MessageBuilder
 import pt.pak3nuh.hollywood.actor.message.serializer.Deserializer
 import pt.pak3nuh.hollywood.actor.message.serializer.Serializer
@@ -37,4 +38,6 @@ interface ProxyConfiguration {
     fun newMessageBuilder(): MessageBuilder
 }
 
-interface ActorScope: CoroutineScope
+interface ActorScope: CoroutineScope {
+    val mainJob: Job
+}

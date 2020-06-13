@@ -18,7 +18,7 @@ interface TypeMappingActor {
     suspend fun everyArrayType(
             byteArray: ByteArray, booleanArray: BooleanArray, shortArray: ShortArray, intArray: IntArray,
             longArray: LongArray, floatArray: FloatArray, doubleArray: DoubleArray, referenceArray: Array<String>,
-            wrappedBooleanArray: Array<Boolean>
+            wrappedBooleanArray: Array<Boolean?>
     )
 
     suspend fun multiDimensionalArrays(string: Array<Array<String>>, int: Array<IntArray>, long: Array<LongArray>)

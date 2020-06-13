@@ -22,7 +22,7 @@ import pt.pakenuh.hollywood.sandbox.pet.PetId
 import pt.pakenuh.hollywood.sandbox.vet.Vet
 import kotlin.reflect.KClass
 
-open class CustomProxy<T>(delegate: T, config: ProxyConfiguration) : ActorProxyBase<T>(delegate, config)
+abstract class CustomProxy<T>(delegate: T, config: ProxyConfiguration) : ActorProxyBase<T>(delegate, config)
 
 @Actor(CustomProxy::class)
 interface ClinicActor {
@@ -139,4 +139,4 @@ private data class PetInObservation(
 }
 
 internal fun ActorSystem.getPetClinic(): ClinicActor =
-        actorManager.getOrCreateActor(ClinicActor.CLINIC_ID, ClinicBinaryFactory::class, ClinicBinaryFactory::createClinic)
+        actorManager.getOrCreateActor(ClinicActor.CLINIC_ID, ClinicFactory::class, ClinicFactory::createClinic)

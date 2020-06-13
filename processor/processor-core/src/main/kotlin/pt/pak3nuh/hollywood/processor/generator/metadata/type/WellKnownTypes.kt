@@ -42,4 +42,9 @@ private class WKType(kClass: KClass<*>, private val typeName: TypeName) : MetaTy
 
     override fun asTypeName(): TypeName = typeName
 
+    override fun asRawTypeName(): TypeName = typeName
+
+    override fun toString(): String {
+        return "Type $name"
+    }
 }

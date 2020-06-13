@@ -79,9 +79,11 @@ class KotlinProxyGenerator(
         builder.beginControlFlow("parameters")
         parameterSpecs.forEach {
             if (it.type.isArray) {
-                builder.addStatement("param(%S, %T::class, %L)", it.name, it.type.asTypeName(), it.name)
+                // arrays are reified
+                builder.addStatement("param(%S, %L::class, %L)", it.name, it.type.asTypeName().toString(), it.name)
             } else {
-                val paramRawType = it.type.asTypeName().copy(nullable = false).toString().replace(Regex("<.*>"), "")
+                // type literals in kotlin must not be nullable and generics not reified
+                val paramRawType = it.type.asRawTypeName().copy(nullable = false)
                 builder.addStatement("param(%S, %L::class, %L)", it.name, paramRawType, it.name)
             }
         }

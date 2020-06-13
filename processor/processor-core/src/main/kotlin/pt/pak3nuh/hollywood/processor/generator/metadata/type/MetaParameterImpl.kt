@@ -21,4 +21,8 @@ private class MetaParameterImpl(
         val kmType = parameter.type ?: parameter.varargElementType ?: error("Parameter $parameter must have a type!")
         return MetaType(kmType, typeParameters)
     }
+
+    override fun toString(): String {
+        return "Parameter $name"
+    }
 }

@@ -24,7 +24,8 @@ internal class FunctionSignatureBuilder {
         // we didn't need to include parameterized types here, but arrays are parameterized in kotlin
         // and reified in the JVM
         // todo optimize
-        val typeId = typeName.toString()
+        val typeNameAsString = typeName.toString()
+        val typeId = typeNameAsString
                 .replace('.', '_')
                 .replace('<', '(')
                 .replace('>', ')')

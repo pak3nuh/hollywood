@@ -31,6 +31,8 @@ abstract class ActorProxyBase<T>(override val delegate: T, private val configura
     final override val actorId: String
         get() = configuration.actorId
 
+    protected abstract val handlerMap: Map<String, MessageHandler>
+
     protected suspend fun <T> sendAndAwait(block: MessageBuilder.() -> Message): T {
         return dispatchAndAwait(block(configuration.newMessageBuilder()))
     }
@@ -81,8 +83,6 @@ abstract class ActorProxyBase<T>(override val delegate: T, private val configura
         val params = MsgParamsImpl(message)
         return onMessage(message.functionId, params, this::raiseError)
     }
-
-    abstract val handlerMap: Map<String, MessageHandler>
 
     open suspend fun onMessage(functionId: String, params: MsgParams, err: (String) -> Nothing): Response {
         val handler: MessageHandler? = handlerMap[functionId]

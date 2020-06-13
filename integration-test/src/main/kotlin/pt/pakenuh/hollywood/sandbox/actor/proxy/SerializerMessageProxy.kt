@@ -1,8 +1,8 @@
 package pt.pakenuh.hollywood.sandbox.actor.proxy
 
-import pt.pak3nuh.hollywood.actor.message.Response
 import pt.pak3nuh.hollywood.actor.proxy.ActorProxyBase
-import pt.pak3nuh.hollywood.actor.proxy.MsgParams
+import pt.pak3nuh.hollywood.actor.proxy.HandlerBuilder
+import pt.pak3nuh.hollywood.actor.proxy.MessageHandler
 import pt.pak3nuh.hollywood.actor.proxy.ProxyConfiguration
 import pt.pakenuh.hollywood.sandbox.actor.ClinicActor
 import pt.pakenuh.hollywood.sandbox.actor.ClinicActorProxySignatures
@@ -19,7 +19,7 @@ open class ClinicBinaryProxy(delegate: ClinicActor, configuration: ProxyConfigur
     override suspend fun checkinPet(pet: Pet) {
         return sendAndAwait {
             parameters {
-                param("pet", pet, false)
+                param("pet", Pet::class, pet)
             }.build(ClinicActorProxySignatures.`checkinPet?pt_pakenuh_hollywood_sandbox_pet_Pet`)
         }
     }
@@ -27,8 +27,8 @@ open class ClinicBinaryProxy(delegate: ClinicActor, configuration: ProxyConfigur
     override suspend fun checkoutPet(petId: PetId, creditCard: CreditCard): Receipt {
         return sendAndAwait {
             parameters {
-                param("petId", petId, false)
-                param("creditCard", creditCard, false)
+                param("petId", PetId::class, petId)
+                param("creditCard", CreditCard::class, creditCard)
             }.build(ClinicActorProxySignatures.`checkoutPet?pt_pakenuh_hollywood_sandbox_pet_PetId&pt_pakenuh_hollywood_sandbox_owner_CreditCard`)
         }
     }
@@ -36,7 +36,7 @@ open class ClinicBinaryProxy(delegate: ClinicActor, configuration: ProxyConfigur
     override suspend fun petReady(pet: Pet) {
         return sendAndAwait {
             parameters {
-                param("pet", pet, false)
+                param("pet", Pet::class, pet)
             }.build(ClinicActorProxySignatures.`petReady?pt_pakenuh_hollywood_sandbox_pet_Pet`)
         }
     }
@@ -44,8 +44,8 @@ open class ClinicBinaryProxy(delegate: ClinicActor, configuration: ProxyConfigur
     override suspend fun orderExam(pet: Pet, exam: Exam): ExamResult {
         return sendAndAwait {
             parameters {
-                param("pet", pet, false)
-                param("exam", exam, false)
+                param("pet", Pet::class, pet)
+                param("exam", Exam::class, exam)
             }.build(ClinicActorProxySignatures.`orderExam?pt_pakenuh_hollywood_sandbox_pet_Pet&pt_pakenuh_hollywood_sandbox_clinic_Exam`)
         }
     }
@@ -53,7 +53,7 @@ open class ClinicBinaryProxy(delegate: ClinicActor, configuration: ProxyConfigur
     override suspend fun getPetToSee(petId: PetId): Pet {
         return sendAndAwait {
             parameters {
-                param("petId", petId, false)
+                param("petId", PetId::class, petId)
             }.build(ClinicActorProxySignatures.`getPetToSee?pt_pakenuh_hollywood_sandbox_pet_PetId`)
         }
     }
@@ -70,17 +70,14 @@ open class ClinicBinaryProxy(delegate: ClinicActor, configuration: ProxyConfigur
         }
     }
 
-    override suspend fun onMessage(functionId: String, msgParams: MsgParams, unit: suspend (suspend () -> Unit) -> Response, value: suspend (suspend () -> Any?) -> Response, err: (String) -> Nothing): Response {
-        return when (functionId) {
-            ClinicActorProxySignatures.`checkinPet?pt_pakenuh_hollywood_sandbox_pet_Pet` -> unit { delegate.checkinPet(msgParams.getObject("pet")) }
-            ClinicActorProxySignatures.`checkoutPet?pt_pakenuh_hollywood_sandbox_pet_PetId&pt_pakenuh_hollywood_sandbox_owner_CreditCard` -> value { delegate.checkoutPet(msgParams.getObject("petId"), msgParams.getObject("creditCard")) }
-            ClinicActorProxySignatures.`petReady?pt_pakenuh_hollywood_sandbox_pet_Pet` -> unit { delegate.petReady(msgParams.getObject("pet")) }
-            ClinicActorProxySignatures.`orderExam?pt_pakenuh_hollywood_sandbox_pet_Pet&pt_pakenuh_hollywood_sandbox_clinic_Exam` -> value { delegate.orderExam(msgParams.getObject("pet"), msgParams.getObject("exam")) }
-            ClinicActorProxySignatures.`getPetToSee?pt_pakenuh_hollywood_sandbox_pet_PetId` -> value { delegate.getPetToSee(msgParams.getObject("petId")) }
-            ClinicActorProxySignatures.`getPets?` -> value { delegate.getPets() }
-            ClinicActorProxySignatures.`waitClosing?` -> unit { delegate.waitClosing() }
-            else -> err("Function id $functionId unknown")
-        }
-    }
-}
+    override val handlerMap: Map<String, MessageHandler> = HandlerBuilder()
+            .unitFunction(ClinicActorProxySignatures.`checkinPet?pt_pakenuh_hollywood_sandbox_pet_Pet`) { delegate.checkinPet(it.getObject("pet")) }
+            .unitFunction(ClinicActorProxySignatures.`petReady?pt_pakenuh_hollywood_sandbox_pet_Pet`) { delegate.petReady(it.getObject("pet")) }
+            .unitFunction(ClinicActorProxySignatures.`waitClosing?`) { delegate.waitClosing() }
+            .valueFunction(ClinicActorProxySignatures.`checkoutPet?pt_pakenuh_hollywood_sandbox_pet_PetId&pt_pakenuh_hollywood_sandbox_owner_CreditCard`) { delegate.checkoutPet(it.getObject("petId"), it.getObject("creditCard")) }
+            .valueFunction(ClinicActorProxySignatures.`orderExam?pt_pakenuh_hollywood_sandbox_pet_Pet&pt_pakenuh_hollywood_sandbox_clinic_Exam`) { delegate.orderExam(it.getObject("pet"), it.getObject("exam")) }
+            .valueFunction(ClinicActorProxySignatures.`getPetToSee?pt_pakenuh_hollywood_sandbox_pet_PetId`) { delegate.getPetToSee(it.getObject("petId")) }
+            .valueFunction(ClinicActorProxySignatures.`getPets?`) { delegate.getPets() }
+            .build()
 
+}

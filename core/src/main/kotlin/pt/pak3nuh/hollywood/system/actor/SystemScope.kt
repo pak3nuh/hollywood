@@ -9,7 +9,6 @@ import pt.pak3nuh.hollywood.actor.proxy.ActorScope
 import java.util.concurrent.Executors
 import kotlin.coroutines.CoroutineContext
 
-// todo docs
 class SystemScope(threadCount: Int) : ActorScope {
 
     override val mainJob = SupervisorJob()

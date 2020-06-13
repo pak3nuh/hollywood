@@ -48,7 +48,8 @@ class MethodGenerator(
                 .addParameters(parameterSpecs)
                 .addCode(buildDelegateCall(context, methodName, returnType, parameterSpecs))
 
-        // TODO
+        // TODO this will be removed HWD-018
+        // kotlin metadata will become stable
         return MethodResult(builder.build(), error("TODO"))
     }
 

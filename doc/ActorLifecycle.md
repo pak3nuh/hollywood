@@ -31,3 +31,14 @@ since there may exist active references for an actor.
 
 This may be useful to cancel any in flight requests, but will only actually have some effect
 on future version of the communication infrastructure.
+
+## Actor coroutine scope
+
+All actors inside the system run inside a common scope. This scope is tied to the actor system itself and is not
+shared between system instances. Whenever anyone needs to access the scope, it is available externally inside
+[ActorSystem](../api/src/main/kotlin/pt/pak3nuh/hollywood/system/ActorSystem.kt) interface.
+
+This scope starts on a supervisor job, that allows for children coroutine failure without parent failure, but for
+the time being, if an unhandled exception bubbles to the actor system, it shuts down the scope.
+
+Some basic configuration options are exposed, like the number of threads available for coroutine handing. 

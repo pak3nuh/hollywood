@@ -41,8 +41,12 @@ by the library maintainers, but it's contract should be enforced by entities tha
 (being automatic or custom), and the entities that create 
 [Messages](../api/src/main/kotlin/pt/pak3nuh/hollywood/actor/message/Message.kt) instances.
 
-For details of that contract, check [this class](../core/src/main/kotlin/pt/pak3nuh/hollywood/system/actor/message/FunctionSignatureBuilder.kt). 
+For details of that contract, check [this class](../processor/processor-core/src/main/kotlin/pt/pak3nuh/hollywood/processor/generator/util/FunctionSignatureBuilder.kt). 
 Be aware relying on it can cause breaking changes between versions.
+
+While not advised to rely on details of the function id build process, the ids themselves are generated on
+a public separate file named **{actorName}ProxySignatures.kt**. The symbols there should be stable as long as
+the function signature doesn't change.
 
 ### Message versioning
 

@@ -38,8 +38,7 @@ class MetaTypeImpl(
     override val isArray: Boolean
         get() {
             val classifier = kmType.classifier
-            // todo improve
-            return classifier is KmClassifier.Class && Regex("kotlin/(.*)Array").matches(classifier.name)
+            return classifier is KmClassifier.Class && arrayRegex.matches(classifier.name)
         }
 
     override fun asTypeName(): TypeName {
@@ -68,6 +67,10 @@ class MetaTypeImpl(
 
     override fun toString(): String {
         return "Type $name"
+    }
+
+    private companion object {
+        val arrayRegex = Regex("kotlin/(.*)Array")
     }
 }
 

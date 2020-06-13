@@ -21,16 +21,20 @@ internal class FunctionSignatureBuilder {
     }
 
     fun addReference(typeName: TypeName): FunctionSignatureBuilder {
-        // we didn't need to include parameterized types here, but arrays are parameterized in kotlin
-        // and reified in the JVM
-        // todo optimize
-        val typeNameAsString = typeName.toString()
-        val typeId = typeNameAsString
-                .replace('.', '_')
-                .replace('<', '(')
-                .replace('>', ')')
-                // todo kotlinpoet has a bug that breaks lines on signatures if they are large and contain spaces
-                .replace(" ", "")
+        val asString = typeName.toString()
+        val typeId = asString.subSequence(0, asString.length)
+                .fold(StringBuilder()) { acc, c ->
+                    when (c) {
+                        '.' -> acc.append('_')
+                        '<' -> acc.append('(')
+                        '>' -> acc.append(')')
+                        ' ' -> {}
+                        else -> acc.append(c)
+                    }
+                    acc
+                }
+                .toString()
+
         parcels.add(Parcel(typeId, typeName))
         return this
     }

@@ -90,6 +90,27 @@ val actorSystem = SystemBuilder()
 
 Please note that the properties are only available until the system is fully built.
 
+## How to use on your project
+
+Currently, there are no public artifacts available, but the project is installable on your local maven
+repository by running `gradlew install`.
+
+Then it should be imported into your project as any other dependency like
+```kotlin
+plugins {
+    kotlin("kapt") // for kotlin annotation processing
+}
+
+repositories {
+    mavenLocal()
+}
+
+dependencies {
+    kapt("pt.pak3nuh.hollywood.processor:processor-core:$version")
+    implementation("pt.pak3nuh.hollywood:builder:$version")
+}
+```
+
 ## Documentation index
 
 For more detailed documentation

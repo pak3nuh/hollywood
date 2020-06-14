@@ -14,7 +14,7 @@ idea {
 }
 
 allprojects {
-    version = "0.0.1"
+    version = "0.1.2"
     group = "pt.pak3nuh.hollywood"
 
     repositories {
@@ -27,6 +27,7 @@ subprojects {
     apply(plugin = "kotlin")
     apply(plugin = "java-library")
     apply(plugin = "idea")
+    apply(plugin = "maven")
 
     dependencies {
         implementation(platform("org.jetbrains.kotlin:kotlin-bom"))

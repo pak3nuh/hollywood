@@ -40,7 +40,7 @@ abstract class ActorProxyBase<T>(override val delegate: T, private val configura
 
     protected abstract val handlerMap: Map<String, MessageHandler>
 
-    protected suspend fun <T> sendAndAwait(block: MessageBuilder.() -> Message): T {
+    protected open suspend fun <T> sendAndAwait(block: MessageBuilder.() -> Message): T {
         return dispatchAndAwait(block(configuration.newMessageBuilder()))
     }
 
@@ -85,13 +85,13 @@ abstract class ActorProxyBase<T>(override val delegate: T, private val configura
         }
     }
 
-    private suspend fun onMessage(packedMessage: ByteArray): Response {
+    protected open suspend fun onMessage(packedMessage: ByteArray): Response {
         val message = deserializer.asMessage(packedMessage)
         val params = MsgParamsImpl(message)
         return onMessage(message.functionId, params, this::raiseError)
     }
 
-    open suspend fun onMessage(functionId: String, params: MsgParams, err: (String) -> Nothing): Response {
+    private suspend fun onMessage(functionId: String, params: MsgParams, err: (String) -> Nothing): Response {
         val handler: MessageHandler? = handlerMap[functionId]
         if (handler == null) {
             err("Unknown function id $functionId")

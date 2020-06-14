@@ -7,7 +7,6 @@ import javax.lang.model.element.TypeElement
 
 class ActorProxyGenerator(
         private val metadataExtractor: (TypeElement) -> MetaClass?,
-        private val javacGenerator: FileGenerator,
         private val kotlinMetadataGenerator: FileGenerator
 ) : FileGenerator {
 
@@ -16,17 +15,10 @@ class ActorProxyGenerator(
             "Actor annotation can only be used on interfaces"
         }
 
-        val kotlinMetadata: MetaClass? = if (context.useMetadata) metadataExtractor(element) else null
-        val sourceFile = if (kotlinMetadata == null) {
-            context.logger.logInfo("Kotlin metadata not available for type $element")
-            javacGenerator.generate(element, context)
-        } else {
-            context[MetaClass] = kotlinMetadata
-            context.logger.logInfo("Using Kotlin metadata for type $element")
-            kotlinMetadataGenerator.generate(element, context)
-        }
-
+        context[MetaClass] = metadataExtractor(element) ?: error("Couldn't load kotlin metadata for element $element")
+        val sourceFile = kotlinMetadataGenerator.generate(element, context)
         context.remove(MetaClass)
+
         return sourceFile
     }
 }

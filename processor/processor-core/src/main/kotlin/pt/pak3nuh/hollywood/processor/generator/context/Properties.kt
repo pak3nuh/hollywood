@@ -2,7 +2,6 @@ package pt.pak3nuh.hollywood.processor.generator.context
 
 import com.squareup.kotlinpoet.AnnotationSpec
 import pt.pak3nuh.hollywood.processor.Generated
-import pt.pak3nuh.hollywood.processor.generator.metadata.type.MetaClass
 import java.time.Instant
 
 fun GenerationContext.generationAnnotation(): AnnotationSpec {
@@ -18,5 +17,3 @@ fun GenerationContext.generationAnnotation(): AnnotationSpec {
     set(GenerationAnnotation, GenerationAnnotation(generatedAnnotation))
     return generatedAnnotation
 }
-
-fun GenerationContext.getKotlinMetadata(): MetaClass? = this[MetaClass]

@@ -41,16 +41,20 @@ import javax.lang.model.element.ElementKind
 import javax.lang.model.element.TypeElement
 import javax.lang.model.type.TypeMirror
 
-abstract class ProxyClassGenerator : FileGenerator, TypeElementVisitor() {
+// this class exists because the first version of the generator only used Mirror API
+// there is not need to rewrite everything to use kotlin metadata, at least for the time being
+class ProxyFilesGenerator(
+        private val functionGenerator: FunctionGenerator
+) : FileGenerator, TypeElementVisitor() {
 
-    final override fun generate(element: TypeElement, context: GenerationContext): FileWriter {
+    override fun generate(element: TypeElement, context: GenerationContext): FileWriter {
         require(element.kind == ElementKind.INTERFACE) {
             "Actor annotation can only be used on interfaces"
         }
         return visitType(element, context).toWriter()
     }
 
-    final override fun visitType(typeElement: TypeElement, context: GenerationContext): Bundle {
+    override fun visitType(typeElement: TypeElement, context: GenerationContext): Bundle {
         val actorInterface = typeElement.asType().asTypeName()
 
         val newClassName = ClassName.bestGuess(proxyName(actorInterface.toString()))
@@ -74,7 +78,7 @@ abstract class ProxyClassGenerator : FileGenerator, TypeElementVisitor() {
                 .addSuperinterface(actorInterface)
 
         val signaturesName = ClassName.bestGuess("${newClassName.canonicalName}Signatures")
-        val functions = buildFunctions(typeElement, FunctionBuildContext(signaturesName), context)
+        val functions = functionGenerator.buildFunctions(typeElement, FunctionBuildContext(signaturesName), context)
         classBuilder.addFunctions(functions.map { it.funSpec })
         classBuilder.addProperty(buildHandlerMap(functions, signaturesName))
 
@@ -94,8 +98,6 @@ abstract class ProxyClassGenerator : FileGenerator, TypeElementVisitor() {
                 }
         return TypeResult(signaturesName, builder.build())
     }
-
-    abstract fun buildFunctions(typeElement: TypeElement, functionBuildContext: FunctionBuildContext, context: GenerationContext): List<MethodResult>
 
     private fun buildHandlerMap(methods: List<MethodResult>, signaturesName: ClassName): PropertySpec {
         val initializer = CodeBlock.builder().addStatement("%T()", HandlerBuilder::class)

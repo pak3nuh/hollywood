@@ -15,16 +15,15 @@ import pt.pak3nuh.hollywood.processor.generator.metadata.type.MetaParameter
 import pt.pak3nuh.hollywood.processor.generator.metadata.type.WellKnownTypes
 import pt.pak3nuh.hollywood.processor.generator.metadata.type.visitor.ClassLiteralVisitor
 import pt.pak3nuh.hollywood.processor.generator.mirror.FunctionBuildContext
-import pt.pak3nuh.hollywood.processor.generator.mirror.ProxyClassGenerator
+import pt.pak3nuh.hollywood.processor.generator.mirror.FunctionGenerator
 import pt.pak3nuh.hollywood.processor.generator.util.FunctionSignatureBuilder
 import pt.pak3nuh.hollywood.processor.generator.util.Logger
 import pt.pak3nuh.hollywood.processor.generator.util.TypeChecker
 import javax.lang.model.element.TypeElement
 
-
-class KotlinProxyGenerator(
+class MetadataFunctionGenerator(
         private val typeChecker: TypeChecker
-) : ProxyClassGenerator() {
+) : FunctionGenerator {
 
     override fun buildFunctions(typeElement: TypeElement, functionBuildContext: FunctionBuildContext, context: GenerationContext): List<MethodResult> {
         val classMetadata = requireNotNull(context[MetaClass]) { "Kotlin class metadata is required" }

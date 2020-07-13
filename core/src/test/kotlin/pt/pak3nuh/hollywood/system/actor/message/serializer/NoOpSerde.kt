@@ -21,4 +21,12 @@ class NoOpSerde: Serializer, Deserializer {
     override fun asResponse(byteArray: ByteArray): Response {
         throw UnsupportedOperationException()
     }
+
+    override fun supports(message: Message): Boolean {
+        throw UnsupportedOperationException()
+    }
+
+    override fun supports(message: Response): Boolean {
+        throw UnsupportedOperationException()
+    }
 }

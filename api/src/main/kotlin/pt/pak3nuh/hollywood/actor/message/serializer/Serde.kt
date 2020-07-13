@@ -10,6 +10,8 @@ import pt.pak3nuh.hollywood.actor.message.Response
 interface Serializer {
     fun serialize(message: Message): ByteArray
     fun serialize(response: Response): ByteArray
+    fun supports(message: Message): Boolean
+    fun supports(message: Response): Boolean
 }
 
 /**

@@ -36,7 +36,7 @@ private class Scope : ParameterScope {
     val parameterList: List<Parameter>
         get() = parameters.toList()
 
-    override fun param(name: String, kClass: KClass<*>, value: Any?) {
+    override fun <T: Any> param(name: String, kClass: KClass<T>, value: T?) {
         addParameter(ReferenceParameter(name, kClass, value))
     }
 

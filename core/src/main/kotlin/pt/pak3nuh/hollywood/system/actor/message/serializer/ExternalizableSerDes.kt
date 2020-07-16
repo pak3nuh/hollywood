@@ -13,23 +13,26 @@ import pt.pak3nuh.hollywood.actor.message.Response
 import pt.pak3nuh.hollywood.actor.message.ShortParameter
 import pt.pak3nuh.hollywood.actor.message.UnitReturn
 import pt.pak3nuh.hollywood.actor.message.ValueReturn
-import pt.pak3nuh.hollywood.actor.message.serializer.Deserializer
-import pt.pak3nuh.hollywood.actor.message.serializer.Serializer
 import pt.pak3nuh.hollywood.util.log.getLogger
-import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.Externalizable
+import java.io.InputStream
 import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
+import java.io.OutputStream
 
-class ExternalizableSerializer : Serializer {
+class ExternalizableSerDes : InternalSerDes {
 
-    override fun serialize(message: Message): ByteArray {
-        ByteArrayOutputStream().use { bytes ->
-            ObjectOutputStream(bytes).use { out ->
-                ExternalizableMessage(message).writeExternal(out)
-            }
-            return bytes.toByteArray()
+    fun serialize(message: Message): ByteArray {
+        ByteArrayOutputStream().use { stream ->
+            serialize(message, stream)
+            return stream.toByteArray()
+        }
+    }
+
+    override fun serialize(message: Message, stream: OutputStream) {
+        ObjectOutputStream(stream).use { out ->
+            ExternalizableMessage(message).writeExternal(out)
         }
     }
 
@@ -43,19 +46,35 @@ class ExternalizableSerializer : Serializer {
         }
     }
 
-    override fun serialize(response: Response): ByteArray {
-        ByteArrayOutputStream().use { bytes ->
-            ObjectOutputStream(bytes).use { out ->
-                ExternalizableResponse(response).writeExternal(out)
-            }
-            return bytes.toByteArray()
+    fun serialize(response: Response): ByteArray {
+        ByteArrayOutputStream().use { stream ->
+            serialize(response, stream)
+            return stream.toByteArray()
         }
     }
 
-    override fun supports(message: Response): Boolean {
-        return when (val value = message.returnValue) {
+    override fun serialize(response: Response, stream: OutputStream) {
+        ObjectOutputStream(stream).use { out ->
+            ExternalizableResponse(response).writeExternal(out)
+        }
+    }
+
+    override fun supports(response: Response): Boolean {
+        return when (val value = response.returnValue) {
             is UnitReturn, is ExceptionReturn -> true
             is ValueReturn -> isValueExternalizable(value.value)
+        }
+    }
+
+    override fun deserializeMessage(stream: InputStream): Message {
+        ObjectInputStream(stream).use { input ->
+            return ExternalizableMessage(input).message
+        }
+    }
+
+    override fun deserializeResponse(stream: InputStream): Response {
+        ObjectInputStream(stream).use { input ->
+            return ExternalizableResponse(input).response
         }
     }
 
@@ -67,25 +86,6 @@ class ExternalizableSerializer : Serializer {
     }
 
     private companion object {
-        val logger = getLogger<ExternalizableSerializer>()
+        val logger = getLogger<ExternalizableSerDes>()
     }
 }
-
-class ExternalizableDeserializer : Deserializer {
-    override fun asMessage(byteArray: ByteArray): Message {
-        ByteArrayInputStream(byteArray).use { stream ->
-            ObjectInputStream(stream).use { input ->
-                return ExternalizableMessage(input).message
-            }
-        }
-    }
-
-    override fun asResponse(byteArray: ByteArray): Response {
-        ByteArrayInputStream(byteArray).use { stream ->
-            ObjectInputStream(stream).use { input ->
-                return ExternalizableResponse(input).response
-            }
-        }
-    }
-}
-

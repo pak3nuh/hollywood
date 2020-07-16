@@ -15,11 +15,14 @@ import pt.pak3nuh.hollywood.actor.message.UnitResponse
 import pt.pak3nuh.hollywood.actor.message.UnitReturn
 import pt.pak3nuh.hollywood.actor.message.ValueResponse
 import pt.pak3nuh.hollywood.actor.message.ValueReturn
+import pt.pak3nuh.hollywood.system.actor.message.MessageBuilderImpl
+import java.io.ByteArrayInputStream
 import java.time.Instant
 
-internal class SerializerStrategyTest {
+internal class LateBindStrategyTest {
 
-    private val strategy = SerializerStrategy(DefaultSerializer())
+    private val strategy = LateBindStrategy(DefaultSerializer(), ExternalizableSerDes())
+    private val messageBuilder = MessageBuilderImpl()
 
     @Test
     fun unitResponse() {
@@ -60,6 +63,29 @@ internal class SerializerStrategyTest {
                     transform { it.message }.isEqualTo(exception.message)
                     transform { it.stackTrace }.isEqualTo(exception.stackTrace?.toList())
                 }
+    }
+
+    @Test
+    internal fun `should select externalizable serializer`() {
+        val message = messageBuilder.parameters {
+            param("extref", ExternalizableString::class, ExternalizableString("some value"))
+        }.build("message")
+        val bytes = strategy.serialize(message)
+        val stream = ByteArrayInputStream(bytes)
+        val type = stream.read()
+        assertThat(type).isEqualTo(LateBindStrategy.StrategyType.Externalizable.ordinal)
+    }
+
+    @Test
+    internal fun `should select default serializer`() {
+        val message = messageBuilder.parameters {
+            param("extref", ExternalizableString::class, ExternalizableString("some value"))
+            param("ref", String::class, "some value")
+        }.build("message")
+        val bytes = strategy.serialize(message)
+        val stream = ByteArrayInputStream(bytes)
+        val type = stream.read()
+        assertThat(type).isEqualTo(LateBindStrategy.StrategyType.Default.ordinal)
     }
 
     data class Holder(val instant: Instant)

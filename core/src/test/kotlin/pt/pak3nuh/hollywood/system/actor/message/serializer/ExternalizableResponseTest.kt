@@ -13,12 +13,12 @@ import pt.pak3nuh.hollywood.actor.message.UnitResponse
 import pt.pak3nuh.hollywood.actor.message.UnitReturn
 import pt.pak3nuh.hollywood.actor.message.ValueResponse
 import pt.pak3nuh.hollywood.actor.message.ValueReturn
+import java.io.ByteArrayInputStream
 
 
 internal class ExternalizableResponseTest{
 
-    val serializer = ExternalizableSerializer()
-    val deserializer = ExternalizableDeserializer()
+    val serdes = ExternalizableSerDes()
 
     @Test
     internal fun `should serde unit responses`() {
@@ -46,9 +46,9 @@ internal class ExternalizableResponseTest{
     }
 
     private fun clone(response: Response): Response {
-        assertThat(serializer.supports(response)).isTrue()
-        val bytes = serializer.serialize(response)
-        return deserializer.asResponse(bytes)
+        assertThat(serdes.supports(response)).isTrue()
+        val bytes = serdes.serialize(response)
+        return serdes.deserializeResponse(ByteArrayInputStream(bytes))
     }
 
     @Test
@@ -61,7 +61,7 @@ internal class ExternalizableResponseTest{
     @Test
     internal fun `should not support non externalizable values`() {
         val response = ValueResponse("")
-        assertThat(serializer.supports(response)).isFalse()
+        assertThat(serdes.supports(response)).isFalse()
     }
 
     @Test

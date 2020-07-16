@@ -11,11 +11,11 @@ import org.junit.jupiter.api.Test
 import pt.pak3nuh.hollywood.actor.message.Message
 import pt.pak3nuh.hollywood.actor.message.Parameter
 import pt.pak3nuh.hollywood.system.actor.message.MessageBuilderImpl
+import java.io.ByteArrayInputStream
 
-internal class ExternalizableSerializerTest {
+internal class ExternalizableSerDesTest {
 
-    val serializer = ExternalizableSerializer()
-    val deserializer = ExternalizableDeserializer()
+    val serdes = ExternalizableSerDes()
     val messageBuilder = MessageBuilderImpl()
 
     @Test
@@ -36,11 +36,11 @@ internal class ExternalizableSerializerTest {
     }
 
     private fun clone(message: Message): Message {
-        assertThat(serializer.supports(message)).isTrue()
+        assertThat(serdes.supports(message)).isTrue()
 
-        val bytes = serializer.serialize(message)
+        val bytes = serdes.serialize(message)
         assertThat(bytes.size).isGreaterThan(0)
-        return deserializer.asMessage(bytes)
+        return serdes.deserializeMessage(ByteArrayInputStream(bytes))
     }
 
     @Test
@@ -81,7 +81,7 @@ internal class ExternalizableSerializerTest {
             param("non externalizable", String::class, "some string")
         }.build("non externalizable parameters")
 
-        assertThat(serializer.supports(message)).isFalse()
+        assertThat(serdes.supports(message)).isFalse()
     }
 
     private fun assertEquivalent(original: Message, clone: Message) {

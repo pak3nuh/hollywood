@@ -26,7 +26,7 @@ interface MessageBuilder {
 }
 
 interface ParameterScope {
-    fun param(name: String, kClass: KClass<*>, value: Any?)
+    fun <T: Any> param(name: String, kClass: KClass<T>, value: T?)
     fun param(name: String, value: Byte)
     fun param(name: String, value: Boolean)
     fun param(name: String, value: Short)

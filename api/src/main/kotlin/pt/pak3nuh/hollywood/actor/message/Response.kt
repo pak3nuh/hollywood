@@ -42,5 +42,6 @@ private val unitReturnValue = UnitReturn()
 fun ValueResponse(returnValue: Any?): Response = ResponseImpl(ReturnType.VALUE, ValueReturn(returnValue))
 fun UnitResponse(): Response = ResponseImpl(ReturnType.UNIT, unitReturnValue)
 fun ExceptionResponse(exception: Exception): Response = ResponseImpl(ReturnType.EXCEPTION, ExceptionReturn(exception))
+fun ExceptionResponse(exception: ExceptionReturn): Response = ResponseImpl(ReturnType.EXCEPTION, exception)
 
 private data class ResponseImpl(override val returnType: ReturnType, override val returnValue: ReturnValue) : Response

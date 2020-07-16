@@ -23,8 +23,10 @@ import pt.pak3nuh.hollywood.actor.message.ShortParameter
 import pt.pak3nuh.hollywood.actor.message.UnitReturn
 import pt.pak3nuh.hollywood.actor.message.ValueReturn
 import java.io.ByteArrayOutputStream
+import java.io.InputStream
+import java.io.OutputStream
 
-internal class DefaultSerializer {
+internal class DefaultSerializer: InternalSerDes {
 
     private val serializer = Kryo()
 
@@ -52,27 +54,43 @@ internal class DefaultSerializer {
     }
 
     fun serialize(message: Message): ByteArray {
-        registerParameterClasses(message.parameters)
-        val internalMessage = InternalMessage.from(message)
         ByteArrayOutputStream().use { stream ->
-            Output(stream).use { output ->
-                serializer.writeClassAndObject(output, internalMessage)
-                output.flush()
-                return stream.toByteArray()
-            }
+            serialize(message, stream)
+            return stream.toByteArray()
         }
 
     }
 
+    override fun serialize(message: Message, stream: OutputStream) {
+        registerParameterClasses(message.parameters)
+        val internalMessage = InternalMessage.from(message)
+        Output(stream).use { output ->
+            serializer.writeClassAndObject(output, internalMessage)
+            output.flush()
+        }
+    }
+
     fun serialize(response: Response): ByteArray {
         ByteArrayOutputStream().use { stream ->
-            Output(stream).use { output ->
-                val internal = InternalResponse(response.returnType, response.returnValue)
-                serializer.writeClassAndObject(output, internal)
-                output.flush()
-                return stream.toByteArray()
-            }
+            serialize(response, stream)
+            return stream.toByteArray()
         }
+    }
+
+    override fun serialize(response: Response, stream: OutputStream) {
+        Output(stream).use { output ->
+            val internal = InternalResponse(response.returnType, response.returnValue)
+            serializer.writeClassAndObject(output, internal)
+            output.flush()
+        }
+    }
+
+    override fun supports(message: Message): Boolean {
+        return true
+    }
+
+    override fun supports(response: Response): Boolean {
+        return true
     }
 
     fun deserializeMessage(byteArray: ByteArray): Message {
@@ -81,8 +99,20 @@ internal class DefaultSerializer {
         }
     }
 
+    override fun deserializeMessage(stream: InputStream): Message {
+        Input(stream).use {
+            return serializer.readClassAndObject(it) as InternalMessage
+        }
+    }
+
     fun deserializeResponse(byteArray: ByteArray): Response {
         Input(byteArray).use {
+            return serializer.readClassAndObject(it) as InternalResponse
+        }
+    }
+
+    override fun deserializeResponse(stream: InputStream): Response {
+        Input(stream).use {
             return serializer.readClassAndObject(it) as InternalResponse
         }
     }

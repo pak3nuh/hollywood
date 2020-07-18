@@ -1,7 +1,6 @@
 package pt.pak3nuh.hollywood.gradle
 
-private object Versions {
-    // plugin versions must be changed inline
+object Versions {
     const val kotlin = "1.3.72"
     const val coroutines = "1.3.5"
     const val metadata = "0.1.0"
@@ -18,7 +17,7 @@ object Dependencies {
     val kotlinPoet = artifact("com.squareup", "kotlinpoet", Versions.kotlinPoet)
     val kotlinCoroutines = kotlinx("kotlinx-coroutines-core", Versions.coroutines)
     val kotlinMetadata = kotlinx("kotlinx-metadata-jvm", Versions.metadata)
-
+    val kotlinSerializationRuntime = kotlinx("kotlinx-serialization-runtime", "0.20.0")
     // todo as of kotiln 1.3.70 this may not be needed
     val kotlinReflect = kotlin("reflect", Versions.kotlin)
     val kotlinStdLib = kotlin("stdlib-jdk8", Versions.kotlin)

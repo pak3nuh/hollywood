@@ -1,5 +1,7 @@
-package pt.pak3nuh.hollywood.processor.generator
+package pt.pak3nuh.hollywood.processor.generator.actor
 
+import pt.pak3nuh.hollywood.processor.generator.FileGenerator
+import pt.pak3nuh.hollywood.processor.generator.FileWriter
 import pt.pak3nuh.hollywood.processor.generator.context.GenerationContext
 import pt.pak3nuh.hollywood.processor.generator.metadata.type.MetaClass
 import javax.lang.model.element.ElementKind

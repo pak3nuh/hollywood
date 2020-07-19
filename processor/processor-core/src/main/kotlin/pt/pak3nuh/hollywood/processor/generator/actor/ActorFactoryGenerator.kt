@@ -1,4 +1,4 @@
-package pt.pak3nuh.hollywood.processor.generator
+package pt.pak3nuh.hollywood.processor.generator.actor
 
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.FunSpec
@@ -11,6 +11,9 @@ import com.squareup.kotlinpoet.asClassName
 import com.squareup.kotlinpoet.asTypeName
 import pt.pak3nuh.hollywood.actor.ActorFactory
 import pt.pak3nuh.hollywood.actor.proxy.ProxyConfiguration
+import pt.pak3nuh.hollywood.processor.generator.FileGenerator
+import pt.pak3nuh.hollywood.processor.generator.FileWriter
+import pt.pak3nuh.hollywood.processor.generator.TypeResult
 import pt.pak3nuh.hollywood.processor.generator.context.GenerationContext
 import pt.pak3nuh.hollywood.processor.generator.context.generationAnnotation
 import pt.pak3nuh.hollywood.processor.generator.mirror.visitor.TypeElementVisitor

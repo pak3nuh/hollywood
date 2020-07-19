@@ -1,1 +1,2 @@
-pt.pak3nuh.hollywood.processor.generator.GeneratorFacade
+pt.pak3nuh.hollywood.processor.generator.actor.ActorProcessor
+pt.pak3nuh.hollywood.processor.generator.serializer.KotlinSerializerProcessor

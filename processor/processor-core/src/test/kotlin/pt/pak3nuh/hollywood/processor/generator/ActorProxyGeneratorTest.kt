@@ -3,6 +3,7 @@ package pt.pak3nuh.hollywood.processor.generator
 import io.mockk.mockk
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import pt.pak3nuh.hollywood.processor.generator.actor.ActorProxyGenerator
 import javax.lang.model.element.ElementKind
 
 internal class ActorProxyGeneratorTest {

@@ -10,7 +10,7 @@ internal class KotlinSerDesTest: BaseSerDesTest() {
 
     override val supportsUnitResponse: Boolean = false
     override val supportsExceptionResponse: Boolean = false
-    override val serdes = KotlinSerDes(setOf(BuiltinKotlinSerializers(), TestProvider()))
+    override val serdes = KotlinSerDes(setOf(BuiltinKotlinSerializers(), TestKSerDesProvider()))
 
     override fun providesNonNullResponseValue(): Any {
         return "some supported value"
@@ -19,18 +19,18 @@ internal class KotlinSerDesTest: BaseSerDesTest() {
     override fun provideNonNullReferenceMessage(): Message {
         return messageBuilder.parameters {
             param("string", String::class, "some string value")
-            param("deep", Holder::class, Holder("other string value"))
+            param("deep", KSerDesHolder::class, KSerDesHolder("other string value"))
         }.build("references")
     }
 }
 
-private class TestProvider: SerializerProvider {
+internal class TestKSerDesProvider: SerializerProvider {
     override fun getAllSerializers(): Set<SerializerData> {
         return setOf(
-                SerializerData(Holder::class, Holder.serializer())
+                SerializerData(KSerDesHolder::class, KSerDesHolder.serializer())
         )
     }
 }
 
 @Serializable
-private data class Holder(val value: String)
+internal data class KSerDesHolder(val value: String)

@@ -25,44 +25,30 @@ internal class LateBindStrategy(
         private val externalizableSerializer: InternalSerDes,
         private val kotlinSerializer: InternalSerDes
 ) : Serializer, Deserializer {
+
     override fun serialize(message: Message): ByteArray {
         return ByteArrayOutputStream().use {
-            when {
-                externalizableSerializer.supports(message) -> {
-                    it.write(StrategyType.Externalizable.ordinal)
-                    externalizableSerializer.serialize(message, it)
-                }
-                kotlinSerializer.supports(message) -> {
-                    it.write(StrategyType.Kotlin.ordinal)
-                    kotlinSerializer.serialize(message, it)
-                }
-                else -> {
-                    it.write(StrategyType.Default.ordinal)
-                    defaultSerializer.serialize(message, it)
-                }
-            }
+            val pair = getSerializer(message) { v, s -> s.supports(v) }
+            it.write(pair.first.ordinal)
+            pair.second.serialize(message, it)
             it
         }.toByteArray()
     }
 
     override fun serialize(response: Response): ByteArray {
         return ByteArrayOutputStream().use {
-            when {
-                externalizableSerializer.supports(response) -> {
-                    it.write(StrategyType.Externalizable.ordinal)
-                    externalizableSerializer.serialize(response, it)
-                }
-                kotlinSerializer.supports(response) -> {
-                    it.write(StrategyType.Kotlin.ordinal)
-                    kotlinSerializer.serialize(response, it)
-                }
-                else -> {
-                    it.write(StrategyType.Default.ordinal)
-                    defaultSerializer.serialize(response, it)
-                }
-            }
+            val pair = getSerializer(response) { v, s -> s.supports(v) }
+            it.write(pair.first.ordinal)
+            pair.second.serialize(response, it)
             it
         }.toByteArray()
+    }
+
+    // todo document order
+    private fun <T> getSerializer(value: T, supportsFun: (T, InternalSerDes) -> Boolean) = when {
+        supportsFun(value, externalizableSerializer) -> StrategyType.Externalizable to externalizableSerializer
+        supportsFun(value, kotlinSerializer) -> StrategyType.Kotlin to kotlinSerializer
+        else -> StrategyType.Default to defaultSerializer
     }
 
     override fun asMessage(byteArray: ByteArray): Message {
@@ -75,6 +61,7 @@ internal class LateBindStrategy(
             }
         }
     }
+
     override fun asResponse(byteArray: ByteArray): Response {
         ByteArrayInputStream(byteArray).use {
             val type = it.read()

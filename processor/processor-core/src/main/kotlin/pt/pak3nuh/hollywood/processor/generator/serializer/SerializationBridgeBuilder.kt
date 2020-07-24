@@ -42,6 +42,7 @@ class SerializationBridgeBuilder(className: ClassName) {
     }
 
     private fun getSerializerBlock(): CodeBlock {
+        // string comparison generates more efficient bytecode but raises equal named class problems
         return CodeBlock.builder()
                 .beginControlFlow("return when(kClass)").apply {
                     bridgesToAdd.forEach { typeName ->

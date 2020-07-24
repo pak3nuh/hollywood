@@ -9,16 +9,18 @@ import java.nio.file.Files
 import java.nio.file.Paths
 import javax.lang.model.element.Element
 
-// todo document split package it multiple SPIs are generated
-const val SPI_NAME = "pt.pak3nuh.hollywood.serializer.generated.KotlinSerializationBridge"
+const val SPI_IMPL_NAME = "pt.pak3nuh.hollywood.serializer.spi.generated.KotlinSerializationBridge"
 
+/**
+ * Generates the bridge that loads the serializers at runtime.
+ */
 class KotlinSerializerProcessor : BaseProcessor(Serializable::class.qualifiedName!!) {
 
     override fun processElements(annotatedElements: Set<Element>, generatedFolder: String) {
         // todo check if services are merged between generated folder and sources
         // kapt doesn't support multiple rounds of annotation processing, so no need to gather state
         generateServicesFile(generatedFolder)
-        val className = ClassName.bestGuess(SPI_NAME)
+        val className = ClassName.bestGuess(SPI_IMPL_NAME)
         val typeSpec = SerializationBridgeBuilder(className)
                 .addBridges(annotatedElements)
                 .build()
@@ -34,7 +36,7 @@ class KotlinSerializerProcessor : BaseProcessor(Serializable::class.qualifiedNam
         Files.deleteIfExists(servicesFolder)
         val directory = Files.createDirectories(servicesFolder)
         val services = Files.createFile(directory.resolve(SerializerProvider::class.qualifiedName!!))
-        Files.write(services, SPI_NAME.toByteArray())
+        Files.write(services, SPI_IMPL_NAME.toByteArray())
     }
 
 }

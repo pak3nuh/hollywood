@@ -14,7 +14,7 @@ idea {
 }
 
 allprojects {
-    version = "0.1.2"
+    version = "0.1.3"
     group = "pt.pak3nuh.hollywood"
 
     repositories {

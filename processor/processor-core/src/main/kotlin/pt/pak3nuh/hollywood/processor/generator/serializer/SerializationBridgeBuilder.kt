@@ -12,8 +12,8 @@ import com.squareup.kotlinpoet.TypeVariableName
 import com.squareup.kotlinpoet.asClassName
 import com.squareup.kotlinpoet.asTypeName
 import kotlinx.serialization.KSerializer
+import pt.pak3nuh.hollywood.processor.api.GeneratedSerializerProvider
 import pt.pak3nuh.hollywood.processor.api.SerializerData
-import pt.pak3nuh.hollywood.processor.api.SerializerProvider
 import javax.lang.model.element.Element
 import kotlin.reflect.KClass
 
@@ -35,7 +35,7 @@ class SerializationBridgeBuilder(className: ClassName) {
     private val bridgesToAdd = mutableSetOf<TypeName>()
 
     fun build(): TypeSpec {
-        return typeBuilder.addSuperinterface(SerializerProvider::class)
+        return typeBuilder.addSuperinterface(GeneratedSerializerProvider::class)
                 .addFunction(allSerializers.addCode(allSerializersBlock()).build())
                 .addFunction(getSerializer.addCode(getSerializerBlock()).build())
                 .build()

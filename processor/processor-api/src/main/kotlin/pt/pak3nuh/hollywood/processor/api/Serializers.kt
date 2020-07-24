@@ -17,4 +17,9 @@ interface SerializerProvider {
     }
 }
 
+/**
+ * Same as [SerializerProvider] but for generated code.
+ */
+interface GeneratedSerializerProvider: SerializerProvider
+
 data class SerializerData(val kClass: KClass<*>, val serializer: KSerializer<*>)

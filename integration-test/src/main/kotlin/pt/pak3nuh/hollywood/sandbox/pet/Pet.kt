@@ -1,8 +1,10 @@
 package pt.pak3nuh.hollywood.sandbox.pet
 
 import kotlinx.coroutines.delay
+import kotlinx.serialization.Serializable
 import pt.pak3nuh.hollywood.sandbox.actor.Treatment
 
+@Serializable
 class Pet(
         val petId: PetId,
         var brokenBones: Boolean = false,

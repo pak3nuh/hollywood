@@ -10,6 +10,7 @@ dependencies {
     implementation(project(":api"))
     implementation(Dependencies.kotlinCoroutines)
     implementation(Dependencies.kotlinSerializationRuntime)
-    testImplementation("org.jetbrains.kotlinx:kotlinx-serialization-cbor:0.20.0")
+
+    testImplementation(Dependencies.logback)
     testImplementation(project(":builder"))
 }

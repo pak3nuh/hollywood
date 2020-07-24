@@ -10,7 +10,6 @@ import pt.pak3nuh.hollywood.sandbox.owner.OwnerContacts
 import pt.pak3nuh.hollywood.sandbox.owner.OwnerId
 import pt.pak3nuh.hollywood.sandbox.pet.Pet
 import pt.pak3nuh.hollywood.sandbox.pet.PetId
-import java.time.LocalDate
 
 class PetClinicDayTest {
 
@@ -27,7 +26,7 @@ class PetClinicDayTest {
     private suspend fun startDay(petClinic: PetClinic) {
         val johnId = OwnerId("123", "John")
         val mrBoots = Pet(
-                PetId("12345678", "Mr Boots", johnId, LocalDate.of(2014, 1, 6)),
+                PetId("12345678", "Mr Boots", johnId, "2014-01-06"),
                 brokenBones = true
         )
         val johnCreditCard = CreditCard("1", 5000)

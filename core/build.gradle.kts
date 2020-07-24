@@ -11,7 +11,7 @@ dependencies {
     implementation(Dependencies.kotlinReflect)
     implementation(Dependencies.kotlinCoroutines)
     implementation(Dependencies.kryo)
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-cbor:0.20.0")
+    implementation(Dependencies.kotlinSerializationCbor)
 
-    testImplementation("ch.qos.logback:logback-classic:1.2.3")
+    testImplementation(Dependencies.logback)
 }

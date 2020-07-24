@@ -18,6 +18,7 @@ import pt.pak3nuh.hollywood.actor.message.ReturnType
 import pt.pak3nuh.hollywood.actor.message.ShortParameter
 import pt.pak3nuh.hollywood.actor.message.ValueResponse
 import pt.pak3nuh.hollywood.actor.message.ValueReturn
+import pt.pak3nuh.hollywood.processor.api.GeneratedSerializerProvider
 import pt.pak3nuh.hollywood.processor.api.SerializerData
 import pt.pak3nuh.hollywood.processor.api.SerializerProvider
 import pt.pak3nuh.hollywood.system.actor.message.MessageImpl
@@ -199,7 +200,9 @@ class KotlinSerDesDiscovery: InternalSerDes {
     private val delegate: InternalSerDes by lazy(this::buildSerdes)
 
     private fun buildSerdes(): InternalSerDes {
-        return KotlinSerDes(ServiceLoader.load(SerializerProvider::class.java).toSet())
+        val manualProviders = ServiceLoader.load(SerializerProvider::class.java)
+        val generatedProviders = ServiceLoader.load(GeneratedSerializerProvider::class.java)
+        return KotlinSerDes(manualProviders.asSequence().plus(generatedProviders).toSet())
     }
 
     override fun serialize(message: Message, stream: OutputStream) = delegate.serialize(message, stream)

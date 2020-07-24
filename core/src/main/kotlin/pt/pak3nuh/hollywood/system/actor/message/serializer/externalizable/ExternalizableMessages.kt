@@ -1,4 +1,4 @@
-package pt.pak3nuh.hollywood.system.actor.message.serializer
+package pt.pak3nuh.hollywood.system.actor.message.serializer.externalizable
 
 import org.slf4j.Logger
 import pt.pak3nuh.hollywood.actor.message.BooleanParameter
@@ -188,7 +188,7 @@ class ExternalizableResponse() : Externalizable {
             }
             Type.Exception -> {
                 val className = input.readUTF()
-                val message: String = input.readUTF()
+                val message: String? = input.readUTF().orNull()
                 val stackSize = input.readInt()
                 val stackTrace = (0 until stackSize).map {
                     StackTraceElement(
@@ -231,7 +231,7 @@ class ExternalizableResponse() : Externalizable {
 
                 // takes some liberties to simplify encoding
                 val message = exceptionReturn.message
-                output.writeUTF(message ?: "")
+                output.writeUTF(message ?: NULL_STR)
 
                 val stacktrace = exceptionReturn.stackTrace
                 output.writeInt(stacktrace?.size ?: 0)

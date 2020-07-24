@@ -16,12 +16,14 @@ import pt.pak3nuh.hollywood.actor.message.UnitReturn
 import pt.pak3nuh.hollywood.actor.message.ValueResponse
 import pt.pak3nuh.hollywood.actor.message.ValueReturn
 import pt.pak3nuh.hollywood.system.actor.message.MessageBuilderImpl
+import pt.pak3nuh.hollywood.system.actor.message.serializer.externalizable.ExternalizableSerDes
+import pt.pak3nuh.hollywood.system.actor.message.serializer.kotlin.KotlinSerDes
 import java.io.ByteArrayInputStream
 import java.time.Instant
 
 internal class LateBindStrategyTest {
 
-    private val strategy = LateBindStrategy(DefaultSerializer(), ExternalizableSerDes())
+    private val strategy = LateBindStrategy(DefaultSerializer(), ExternalizableSerDes(), KotlinSerDes(emptySet()))
     private val messageBuilder = MessageBuilderImpl()
 
     @Test

@@ -90,14 +90,9 @@ internal class DefaultSerializer: InternalSerDes {
     }
 
     override fun supports(response: Response): Boolean {
-        return true
+        return response.returnType == ReturnType.VALUE
     }
 
-    fun deserializeMessage(byteArray: ByteArray): Message {
-        Input(byteArray).use {
-            return serializer.readClassAndObject(it) as InternalMessage
-        }
-    }
 
     override fun deserializeMessage(stream: InputStream): Message {
         Input(stream).use {
@@ -105,11 +100,6 @@ internal class DefaultSerializer: InternalSerDes {
         }
     }
 
-    fun deserializeResponse(byteArray: ByteArray): Response {
-        Input(byteArray).use {
-            return serializer.readClassAndObject(it) as InternalResponse
-        }
-    }
 
     override fun deserializeResponse(stream: InputStream): Response {
         Input(stream).use {

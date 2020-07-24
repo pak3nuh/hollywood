@@ -1,18 +1,18 @@
-package pt.pak3nuh.hollywood.system.actor.message.serializer
+package pt.pak3nuh.hollywood.system.actor.message.serializer.externalizable
 
 import pt.pak3nuh.hollywood.actor.message.BooleanParameter
 import pt.pak3nuh.hollywood.actor.message.ByteParameter
 import pt.pak3nuh.hollywood.actor.message.DoubleParameter
-import pt.pak3nuh.hollywood.actor.message.ExceptionReturn
 import pt.pak3nuh.hollywood.actor.message.FloatParameter
 import pt.pak3nuh.hollywood.actor.message.IntParameter
 import pt.pak3nuh.hollywood.actor.message.LongParameter
 import pt.pak3nuh.hollywood.actor.message.Message
 import pt.pak3nuh.hollywood.actor.message.ReferenceParameter
 import pt.pak3nuh.hollywood.actor.message.Response
+import pt.pak3nuh.hollywood.actor.message.ReturnType
 import pt.pak3nuh.hollywood.actor.message.ShortParameter
-import pt.pak3nuh.hollywood.actor.message.UnitReturn
 import pt.pak3nuh.hollywood.actor.message.ValueReturn
+import pt.pak3nuh.hollywood.system.actor.message.serializer.InternalSerDes
 import pt.pak3nuh.hollywood.util.log.getLogger
 import java.io.ByteArrayOutputStream
 import java.io.Externalizable
@@ -60,9 +60,11 @@ class ExternalizableSerDes : InternalSerDes {
     }
 
     override fun supports(response: Response): Boolean {
-        return when (val value = response.returnValue) {
-            is UnitReturn, is ExceptionReturn -> true
-            is ValueReturn -> isValueExternalizable(value.value)
+        // only this serializer supports unit and return types because the format is static
+        // todo document
+        return when (response.returnType) {
+            ReturnType.UNIT, ReturnType.EXCEPTION -> true
+            ReturnType.VALUE -> isValueExternalizable((response.returnValue as ValueReturn).value)
         }
     }
 

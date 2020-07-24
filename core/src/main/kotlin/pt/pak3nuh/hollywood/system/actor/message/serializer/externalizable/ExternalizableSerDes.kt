@@ -61,7 +61,6 @@ class ExternalizableSerDes : InternalSerDes {
 
     override fun supports(response: Response): Boolean {
         // only this serializer supports unit and return types because the format is static
-        // todo document
         return when (response.returnType) {
             ReturnType.UNIT, ReturnType.EXCEPTION -> true
             ReturnType.VALUE -> isValueExternalizable((response.returnValue as ValueReturn).value)

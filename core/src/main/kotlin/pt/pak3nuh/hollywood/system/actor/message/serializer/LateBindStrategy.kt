@@ -44,7 +44,6 @@ internal class LateBindStrategy(
         }.toByteArray()
     }
 
-    // todo document order
     private fun <T> getSerializer(value: T, supportsFun: (T, InternalSerDes) -> Boolean) = when {
         supportsFun(value, externalizableSerializer) -> StrategyType.Externalizable to externalizableSerializer
         supportsFun(value, kotlinSerializer) -> StrategyType.Kotlin to kotlinSerializer

@@ -198,7 +198,6 @@ class ExternalizableResponse() : Externalizable {
                             input.readInt() //lineNumber
                     )
                 }
-                // todo document possible classloader issues
                 ExceptionResponse(ExceptionReturn(
                         Class.forName(className).asSubclass(Exception::class.java),
                         message,

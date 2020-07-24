@@ -25,6 +25,9 @@ taken on serialization of certain classes.
 
 To be enable this serializer, a class must implement the `java.io.Externalizable` interface.
 
+This is also the only serializer that will process responses with a fixed structure, like UNIT and EXCEPTION cases.
+It would be a waste of effort to support them on all the serializers. 
+
 ### Default serializer
 
 This serializer acts as a fallback for all others. It is designed to work in the most flexible

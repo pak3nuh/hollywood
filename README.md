@@ -99,6 +99,7 @@ Then it should be imported into your project as any other dependency like
 ```kotlin
 plugins {
     kotlin("kapt") // for kotlin annotation processing
+    kotlin("plugin.serialization") // if needed
 }
 
 repositories {

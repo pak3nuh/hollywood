@@ -12,18 +12,20 @@ import pt.pak3nuh.hollywood.actor.message.DoubleParameter
 import pt.pak3nuh.hollywood.actor.message.FloatParameter
 import pt.pak3nuh.hollywood.actor.message.IntParameter
 import pt.pak3nuh.hollywood.actor.message.LongParameter
+import pt.pak3nuh.hollywood.actor.message.Message
 import pt.pak3nuh.hollywood.actor.message.ReferenceParameter
 import pt.pak3nuh.hollywood.actor.message.ShortParameter
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 
-internal class DefaultSerializerTest {
+internal class DefaultSerializerTest: BaseSerDesTest() {
 
-    private val serializer = DefaultSerializer()
+    override val supportsUnitResponse: Boolean = false
+    override val supportsExceptionResponse: Boolean = false
+    override val serdes: InternalSerDes = DefaultSerializer()
 
-    @Test
-    internal fun `should serde empty message`() {
-        val testMessage = TestMessage("some id", emptyList())
-        val copy = serde(testMessage)
-        assertEquivalent(testMessage, copy)
+    override fun providesNonNullResponseValue(): Any {
+        return "some value"
     }
 
     @Test
@@ -47,6 +49,13 @@ internal class DefaultSerializerTest {
         assertEquivalent(testMessage, copy)
     }
 
+    override fun provideNonNullReferenceMessage(): Message {
+        return messageBuilder.parameters {
+            param("string", String::class, "some string value")
+            param("deep", FinalClass::class, FinalClass(12345))
+        }.build("references")
+    }
+
     @Test
     internal fun `should serde arrays`() {
         val expected = intArrayOf(1, 2, 3)
@@ -65,8 +74,10 @@ internal class DefaultSerializerTest {
     }
 
     private fun serde(testMessage: TestMessage): TestMessage {
-        val asBytes = serializer.serialize(testMessage)
-        val moshiMessage = serializer.deserializeMessage(asBytes)
+        val stream = ByteArrayOutputStream()
+        serdes.serialize(testMessage, stream)
+        val asBytes = stream.toByteArray()
+        val moshiMessage = serdes.deserializeMessage(ByteArrayInputStream(asBytes))
         return TestMessage(moshiMessage.functionId, moshiMessage.parameters)
     }
 }

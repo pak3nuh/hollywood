@@ -83,11 +83,11 @@ class TypeVisitor(
     lateinit var typeName: TypeName
         private set
 
-    override fun visitClass(kName: KClassName) {
+    override fun visitClass(name: KClassName) {
         // / -> .
         // . -> annonymous classes, nor supported
-        val name = kName.replace('/', '.')
-        typeName = ClassName.bestGuess(name)
+        val nameFix = name.replace('/', '.')
+        typeName = ClassName.bestGuess(nameFix)
     }
 
     override fun visitStarProjection() {

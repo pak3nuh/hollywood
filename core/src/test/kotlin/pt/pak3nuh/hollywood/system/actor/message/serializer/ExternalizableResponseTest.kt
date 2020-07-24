@@ -3,16 +3,13 @@ package pt.pak3nuh.hollywood.system.actor.message.serializer
 import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isFalse
-import assertk.assertions.isInstanceOf
 import assertk.assertions.isTrue
 import org.junit.jupiter.api.Test
 import pt.pak3nuh.hollywood.actor.message.ExceptionResponse
-import pt.pak3nuh.hollywood.actor.message.ExceptionReturn
 import pt.pak3nuh.hollywood.actor.message.Response
 import pt.pak3nuh.hollywood.actor.message.UnitResponse
-import pt.pak3nuh.hollywood.actor.message.UnitReturn
 import pt.pak3nuh.hollywood.actor.message.ValueResponse
-import pt.pak3nuh.hollywood.actor.message.ValueReturn
+import pt.pak3nuh.hollywood.system.actor.message.serializer.externalizable.ExternalizableSerDes
 import java.io.ByteArrayInputStream
 
 
@@ -31,18 +28,7 @@ internal class ExternalizableResponseTest{
 
     private fun assertEquivalent(original: Response, clone: Response) {
         assertThat(original.returnType).isEqualTo(clone.returnType)
-        assertThat(original.returnValue).isInstanceOf(clone.returnValue::class)
-        val result: Boolean = when (val oEx = original.returnValue) {
-            is UnitReturn -> true
-            is ValueReturn -> original.returnValue == clone.returnValue
-            is ExceptionReturn -> {
-                val cEx = clone.returnValue as ExceptionReturn
-                oEx.klass == cEx.klass &&
-                        oEx.message ?: "" == cEx.message &&
-                        oEx.stackTrace ?: emptyList() == cEx.stackTrace
-            }
-        }
-        assertThat(result).isTrue()
+        assertThat(original.returnValue).isEqualTo(clone.returnValue)
     }
 
     private fun clone(response: Response): Response {

@@ -2,7 +2,7 @@ import org.gradle.plugins.ide.idea.model.IdeaLanguageLevel
 import pt.pak3nuh.hollywood.gradle.Dependencies
 
 plugins {
-    kotlin("jvm") version "1.3.72"
+    kotlin("jvm") version pt.pak3nuh.hollywood.gradle.Versions.kotlin
     idea
 }
 
@@ -14,7 +14,7 @@ idea {
 }
 
 allprojects {
-    version = "0.1.2"
+    version = "0.1.3"
     group = "pt.pak3nuh.hollywood"
 
     repositories {

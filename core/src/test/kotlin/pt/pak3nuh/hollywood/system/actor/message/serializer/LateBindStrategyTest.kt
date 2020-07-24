@@ -16,12 +16,16 @@ import pt.pak3nuh.hollywood.actor.message.UnitReturn
 import pt.pak3nuh.hollywood.actor.message.ValueResponse
 import pt.pak3nuh.hollywood.actor.message.ValueReturn
 import pt.pak3nuh.hollywood.system.actor.message.MessageBuilderImpl
+import pt.pak3nuh.hollywood.system.actor.message.serializer.externalizable.ExternalizableSerDes
+import pt.pak3nuh.hollywood.system.actor.message.serializer.kotlin.KSerDesHolder
+import pt.pak3nuh.hollywood.system.actor.message.serializer.kotlin.KotlinSerDes
+import pt.pak3nuh.hollywood.system.actor.message.serializer.kotlin.TestKSerDesProvider
 import java.io.ByteArrayInputStream
 import java.time.Instant
 
 internal class LateBindStrategyTest {
 
-    private val strategy = LateBindStrategy(DefaultSerializer(), ExternalizableSerDes())
+    private val strategy = LateBindStrategy(DefaultSerializer(), ExternalizableSerDes(), KotlinSerDes(setOf(TestKSerDesProvider())))
     private val messageBuilder = MessageBuilderImpl()
 
     @Test
@@ -74,6 +78,17 @@ internal class LateBindStrategyTest {
         val stream = ByteArrayInputStream(bytes)
         val type = stream.read()
         assertThat(type).isEqualTo(LateBindStrategy.StrategyType.Externalizable.ordinal)
+    }
+
+    @Test
+    internal fun `should select kotlin serializer`() {
+        val message = messageBuilder.parameters {
+            param("extref", KSerDesHolder::class, KSerDesHolder("some value"))
+        }.build("message")
+        val bytes = strategy.serialize(message)
+        val stream = ByteArrayInputStream(bytes)
+        val type = stream.read()
+        assertThat(type).isEqualTo(LateBindStrategy.StrategyType.Kotlin.ordinal)
     }
 
     @Test

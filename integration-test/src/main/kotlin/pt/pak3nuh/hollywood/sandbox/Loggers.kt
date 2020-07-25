@@ -20,7 +20,8 @@ object Loggers {
             override fun format(record: LogRecord): String {
                 val date = Instant.ofEpochMilli(record.millis)
                 val loggerName = record.loggerName.split('.').last()
-                return String.format("%s %s %s: %s${System.lineSeparator()}", date, loggerName, record.level, record.message)
+                return String.format("%s %s %s: %s${System.lineSeparator()}",
+                        date, loggerName, record.level, record.message)
             }
         }
     }

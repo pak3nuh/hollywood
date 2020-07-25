@@ -107,7 +107,8 @@ class ProxyFilesGenerator(
             } else {
                 "valueFunction"
             }
-            initializer.beginControlFlow(".%L(%T.`%L`) { params ->", invoke, signaturesName, method.funSignature.symbolName)
+            initializer.beginControlFlow(".%L(%T.`%L`) { params ->",
+                    invoke, signaturesName, method.funSignature.symbolName)
                     .addStatement("delegate.%L(", method.funSpec.name)
             method.funSpec.parameters.forEachIndexed { idx, param ->
                 val comma = if (idx == 0) "" else ","
@@ -115,9 +116,14 @@ class ProxyFilesGenerator(
                 val isNullable = param.type.isNullable
                 val literal = ClassLiteralVisitor().apply(param.type::accept).result
                 when {
-                    isArray && isNullable -> initializer.add("%L params.getArrayNullable(%S, %T::class)", comma, param.name, literal)
-                    isArray && !isNullable -> initializer.add("%L params.getArray(%S, %T::class)", comma, param.name, literal)
+                    isArray && isNullable ->
+                        initializer.add("%L params.getArrayNullable(%S, %T::class)", comma, param.name, literal)
+
+                    isArray && !isNullable ->
+                        initializer.add("%L params.getArray(%S, %T::class)", comma, param.name, literal)
+
                     !isArray && isNullable -> initializer.add("%L params.getObjectNullable(%S)", comma, param.name)
+
                     !isArray && !isNullable -> initializer.add("%L params.getObject(%S)", comma, param.name)
                 }
             }

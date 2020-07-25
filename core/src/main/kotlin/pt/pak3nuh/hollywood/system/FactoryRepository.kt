@@ -18,7 +18,8 @@ interface FactoryRepository {
     operator fun <T : Any, P : ActorProxy<T>, F : ActorFactory<T, P>> get(factoryClass: KClass<out F>): F
 }
 
-class FactoryRepositoryImpl(private val factoryMap: Map<KClass<out AnyActorFactory>, AnyActorFactory>) : FactoryRepository {
+class FactoryRepositoryImpl(private val factoryMap: Map<KClass<out AnyActorFactory>, AnyActorFactory>)
+    : FactoryRepository {
 
     override fun <T : Any, P : ActorProxy<T>, F : ActorFactory<T, P>> get(factoryClass: KClass<out F>): F {
         // get reified factory

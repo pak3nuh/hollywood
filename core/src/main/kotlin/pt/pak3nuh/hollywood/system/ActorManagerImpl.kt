@@ -26,11 +26,13 @@ class ActorManagerImpl(
     // not using the InternalActorId because inline classes are boxed on generics
     private val managedActors = ConcurrentSkipListMap<String, AtomicHolder>()
 
-    override fun <T : Any, P : ActorProxy<T>, F : ActorFactory<T, P>> createActor(factoryClass: KClass<out F>, creator: (F) -> T): T {
+    override fun <T : Any, P : ActorProxy<T>, F : ActorFactory<T, P>>
+            createActor(factoryClass: KClass<out F>, creator: (F) -> T): T {
         return getOrCreateActor(UUID.randomUUID().toString(), factoryClass, creator)
     }
 
-    override fun <T : Any, P : ActorProxy<T>, F : ActorFactory<T, P>> getOrCreateActor(actorId: String, factoryClass: KClass<out F>, creator: (F) -> T): T {
+    override fun <T : Any, P : ActorProxy<T>, F : ActorFactory<T, P>>
+            getOrCreateActor(actorId: String, factoryClass: KClass<out F>, creator: (F) -> T): T {
         purgeReferences()
         // get reified factory
         val factory = factoryRepository[factoryClass]
@@ -44,7 +46,10 @@ class ActorManagerImpl(
                 }
                 check(!factory.proxyKClass.isInstance(actorInstance)) { "Actor created can't be a proxy" }
                 // creates proxy
-                val proxy = factory.createProxy(actorInstance, Configuration(internalActorId, serializer, deserializer, actorScope))
+                val proxy = factory.createProxy(
+                        actorInstance,
+                        Configuration(internalActorId, serializer, deserializer, actorScope)
+                )
                 check(actorInstance::class != proxy::class) { "Actor and proxy have the same type" }
                 proxy
             }
@@ -101,7 +106,10 @@ class ActorManagerImpl(
         }
     }
 
-    private class ProxyReference(referent: ActorProxy<*>, queue: ReferenceQueue<in ActorProxy<*>>) : WeakReference<ActorProxy<*>>(referent, queue) {
+    private class ProxyReference(
+            referent: ActorProxy<*>,
+            queue: ReferenceQueue<in ActorProxy<*>>
+    ) : WeakReference<ActorProxy<*>>(referent, queue) {
         val actorId = referent.actorId
     }
 

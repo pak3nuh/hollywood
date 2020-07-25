@@ -1,0 +1,16 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues></ManuallySuppressedIssues>
+  <CurrentIssues>
+    <ID>LongParameterList:GeneratorTest.kt$TypeMappingActor$( byte: Byte, boolean: Boolean, short: Short, int: Int, long: Long, float: Float, double: Double )</ID>
+    <ID>LongParameterList:GeneratorTest.kt$TypeMappingActor$( byteArray: ByteArray?, booleanArray: BooleanArray, shortArray: ShortArray, intArray: IntArray, longArray: LongArray, floatArray: FloatArray?, doubleArray: DoubleArray, referenceArray: Array&lt;String&gt;?, wrappedBooleanArray: Array&lt;Boolean?&gt; )</ID>
+    <ID>MagicNumber:ClinicActor.kt$ClinicActorImpl$1_000</ID>
+    <ID>MagicNumber:Pet.kt$Pet$1000</ID>
+    <ID>TooManyFunctions:GeneratorTest.kt$TypeMappingActor$TypeMappingActor</ID>
+    <ID>TooGenericExceptionCaught:BaseProcessor.kt$BaseProcessor$ex: Exception</ID>
+    <ID>TooManyFunctions:KotlinMetadataExtractor.kt$KotlinMetadataExtractor$KotlinMetadataExtractor</ID>
+    <ID>TooManyFunctions:TypeConverter.kt$TypeConverter.Visitor$Visitor</ID>
+    <ID>TooManyFunctions:KotlinSerDes.kt$KotlinSerDes$KotlinSerDes</ID>
+    <ID>TooGenericExceptionCaught:ActorProxyBase.kt$ActorProxyBase$e: Exception</ID>
+  </CurrentIssues>
+</SmellBaseline>

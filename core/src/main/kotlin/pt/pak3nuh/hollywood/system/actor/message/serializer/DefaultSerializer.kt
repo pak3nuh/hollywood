@@ -133,4 +133,7 @@ internal data class InternalMessage constructor(
         }
     }
 }
-internal data class InternalResponse(override val returnType: ReturnType, override val returnValue: ReturnValue): Response
+internal data class InternalResponse(
+        override val returnType: ReturnType,
+        override val returnValue: ReturnValue
+): Response

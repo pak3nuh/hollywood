@@ -14,8 +14,8 @@ interface ActorProxy<T> {
     /**
      * The actual user defined actor.
      *
-     * Because an [ActorProxy] of [T] is also a [T], it is possible to just return **this**, although highly discouraged,
-     * because it goes against the expected structure.
+     * Because an [ActorProxy] of [T] is also a [T], it is possible to just return **this**, although highly
+     * discouraged, because it goes against the expected structure.
      * @see Actor
      */
     val delegate: T

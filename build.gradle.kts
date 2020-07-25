@@ -5,6 +5,7 @@ import pt.pak3nuh.hollywood.gradle.Dependencies
 plugins {
     kotlin("jvm") version pt.pak3nuh.hollywood.gradle.Versions.kotlin
     idea
+    // detekt task generates compiler warnings because is running an older version of the kotlin compiler.
     id("io.gitlab.arturbosch.detekt") version "1.10.0"
 }
 

@@ -30,7 +30,8 @@ import kotlin.reflect.KClass
  * Any custom proxy that is expected to be plugged in into the code generator, should expose the same public interface.
  * Consider extending this class for increased compatibility with the code generator.
  */
-abstract class ActorProxyBase<T>(override val delegate: T, private val configuration: ProxyConfiguration) : ActorProxy<T> {
+abstract class ActorProxyBase<T>(override val delegate: T, private val configuration: ProxyConfiguration)
+    : ActorProxy<T> {
 
     private val serializer = configuration.serializer
     private val deserializer = configuration.deserializer
@@ -110,7 +111,7 @@ abstract class ActorProxyBase<T>(override val delegate: T, private val configura
 }
 
 interface MessageHandler {
-    val functionId:String
+    val functionId: String
     val handler: suspend (MsgParams) -> Response
 }
 
@@ -139,18 +140,21 @@ class HandlerBuilder {
         return handlerList.associateBy(MessageHandler::functionId)
     }
 
-    private data class Handler(override val functionId: String, override val handler: suspend (MsgParams) -> Response): MessageHandler
+    private data class Handler(
+            override val functionId: String,
+            override val handler: suspend (MsgParams) -> Response
+    ) : MessageHandler
 }
 
 interface MsgParams {
     // todo can be improved to avoid boxing and unboxing
     fun <T> getObject(name: String): T
     fun <T> getObjectNullable(name: String): T?
-    fun <T: Any> getArray(name: String, kClass: KClass<T>): T
-    fun <T: Any> getArrayNullable(name: String, kClass: KClass<T>): T?
+    fun <T : Any> getArray(name: String, kClass: KClass<T>): T
+    fun <T : Any> getArrayNullable(name: String, kClass: KClass<T>): T?
 }
 
-private class MsgParamsImpl(private val message: Message): MsgParams {
+private class MsgParamsImpl(private val message: Message) : MsgParams {
 
     override fun <T> getObject(name: String): T = getObjectNullable(name) ?: error("Parameter $name can't be null")
 

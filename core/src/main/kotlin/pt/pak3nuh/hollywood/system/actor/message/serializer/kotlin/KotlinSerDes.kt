@@ -23,6 +23,7 @@ import pt.pak3nuh.hollywood.processor.api.SerializerData
 import pt.pak3nuh.hollywood.processor.api.SerializerProvider
 import pt.pak3nuh.hollywood.system.actor.message.MessageImpl
 import pt.pak3nuh.hollywood.system.actor.message.serializer.InternalSerDes
+import pt.pak3nuh.hollywood.system.actor.message.serializer.kotlin.KSerDesParameter.Type
 import pt.pak3nuh.hollywood.util.log.getLogger
 import java.io.InputStream
 import java.io.ObjectInputStream
@@ -45,7 +46,8 @@ internal class KotlinSerDes(private val serializerProviders: Set<SerializerProvi
         }.toSet()
     }
 
-    override fun serialize(message: Message, stream: OutputStream) = ObjectOutputStream(stream).use { serialize(message, it) }
+    override fun serialize(message: Message, stream: OutputStream) =
+            ObjectOutputStream(stream).use { serialize(message, it) }
 
     private fun serialize(message: Message, stream: ObjectOutputStream) {
         logger.debug("Serializing message {}", message)
@@ -59,15 +61,15 @@ internal class KotlinSerDes(private val serializerProviders: Set<SerializerProvi
                     val reference = param.value?.let {
                         KSerDesValue(kClass.java.name, Cbor.dump(serializer, it))
                     }
-                    KSerDesParameter(KSerDesParameter.Type.Ref, param.name, reference = reference)
+                    KSerDesParameter(Type.Ref, param.name, reference = reference)
                 }
-                is BooleanParameter -> KSerDesParameter(KSerDesParameter.Type.Boolean, param.name, boolean = param.value)
-                is ByteParameter -> KSerDesParameter(KSerDesParameter.Type.Byte, param.name, byte = param.value)
-                is ShortParameter -> KSerDesParameter(KSerDesParameter.Type.Short, param.name, short = param.value)
-                is IntParameter -> KSerDesParameter(KSerDesParameter.Type.Int, param.name, int = param.value)
-                is LongParameter -> KSerDesParameter(KSerDesParameter.Type.Long, param.name, long = param.value)
-                is FloatParameter -> KSerDesParameter(KSerDesParameter.Type.Float, param.name, float = param.value)
-                is DoubleParameter -> KSerDesParameter(KSerDesParameter.Type.Double, param.name, double = param.value)
+                is BooleanParameter -> KSerDesParameter(Type.Boolean, param.name, boolean = param.value)
+                is ByteParameter -> KSerDesParameter(Type.Byte, param.name, byte = param.value)
+                is ShortParameter -> KSerDesParameter(Type.Short, param.name, short = param.value)
+                is IntParameter -> KSerDesParameter(Type.Int, param.name, int = param.value)
+                is LongParameter -> KSerDesParameter(Type.Long, param.name, long = param.value)
+                is FloatParameter -> KSerDesParameter(Type.Float, param.name, float = param.value)
+                is DoubleParameter -> KSerDesParameter(Type.Double, param.name, double = param.value)
             }
         }
 
@@ -85,7 +87,8 @@ internal class KotlinSerDes(private val serializerProviders: Set<SerializerProvi
         return serializerProviders.asSequence().mapNotNull { it.getSerializer(kClass) }.first() as KSerializer<Any>
     }
 
-    override fun serialize(response: Response, stream: OutputStream) = ObjectOutputStream(stream).use { serialize(response, it) }
+    override fun serialize(response: Response, stream: OutputStream) =
+            ObjectOutputStream(stream).use { serialize(response, it) }
 
     private fun serialize(response: Response, stream: ObjectOutputStream) {
         logger.debug("Serializing response {}", response)
@@ -135,7 +138,8 @@ internal class KotlinSerDes(private val serializerProviders: Set<SerializerProvi
         return result
     }
 
-    override fun deserializeMessage(stream: InputStream): Message = ObjectInputStream(stream).use(this::deserializeMessage)
+    override fun deserializeMessage(stream: InputStream): Message =
+            ObjectInputStream(stream).use(this::deserializeMessage)
 
     private fun deserializeMessage(stream: ObjectInputStream): Message {
         logger.debug("Deserializing message")
@@ -148,14 +152,14 @@ internal class KotlinSerDes(private val serializerProviders: Set<SerializerProvi
         val params: List<Parameter> = kotlinMessage.parameters.map {
             logger.trace("Converting parameter {}", it)
             when (it.type) {
-                KSerDesParameter.Type.Boolean -> BooleanParameter(it.name, it.boolean)
-                KSerDesParameter.Type.Byte -> ByteParameter(it.name, it.byte)
-                KSerDesParameter.Type.Short -> ShortParameter(it.name, it.short)
-                KSerDesParameter.Type.Int -> IntParameter(it.name, it.int)
-                KSerDesParameter.Type.Long -> LongParameter(it.name, it.long)
-                KSerDesParameter.Type.Float -> FloatParameter(it.name, it.float)
-                KSerDesParameter.Type.Double -> DoubleParameter(it.name, it.double)
-                KSerDesParameter.Type.Ref -> {
+                Type.Boolean -> BooleanParameter(it.name, it.boolean)
+                Type.Byte -> ByteParameter(it.name, it.byte)
+                Type.Short -> ShortParameter(it.name, it.short)
+                Type.Int -> IntParameter(it.name, it.int)
+                Type.Long -> LongParameter(it.name, it.long)
+                Type.Float -> FloatParameter(it.name, it.float)
+                Type.Double -> DoubleParameter(it.name, it.double)
+                Type.Ref -> {
                     it.reference?.let { ref ->
                         logger.debug("Loading parameter of type {}", ref.className)
                         val kClass = Class.forName(ref.className).kotlin
@@ -169,7 +173,8 @@ internal class KotlinSerDes(private val serializerProviders: Set<SerializerProvi
         return MessageImpl(kotlinMessage.functionId, params)
     }
 
-    override fun deserializeResponse(stream: InputStream): Response = ObjectInputStream(stream).use(this::deserializeResponse)
+    override fun deserializeResponse(stream: InputStream): Response =
+            ObjectInputStream(stream).use(this::deserializeResponse)
 
     private fun deserializeResponse(stream: ObjectInputStream): Response {
         logger.debug("Deserializing response")

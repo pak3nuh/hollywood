@@ -35,11 +35,19 @@ interface ClinicActor {
     }
 }
 
-class ClinicFactory(private val vets: List<Vet>, private val actors: ClinicActors, val parentJob: Job) : ClinicActorBaseFactory {
+class ClinicFactory(
+        private val vets: List<Vet>,
+        private val actors: ClinicActors,
+        val parentJob: Job
+) : ClinicActorBaseFactory {
     fun createClinic(): ClinicActor = ClinicActorImpl(vets, actors, parentJob)
 }
 
-internal class ClinicActorImpl(private val vets: List<Vet>, private val actors: ClinicActors, parentJob: Job) : ClinicActor {
+internal class ClinicActorImpl(
+        private val vets: List<Vet>,
+        private val actors: ClinicActors,
+        parentJob: Job
+) : ClinicActor {
 
     private val pets = mutableMapOf<String, PetInObservation>()
     private val job: CompletableJob = Job(parentJob)

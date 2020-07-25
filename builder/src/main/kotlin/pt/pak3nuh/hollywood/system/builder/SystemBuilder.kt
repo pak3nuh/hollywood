@@ -35,7 +35,8 @@ class SystemBuilder {
     /**
      * Registers a factory to be available in the actor system.
      */
-    fun <T : Any, P : ActorProxy<T>, F : ActorFactory<T, P>> registerFactory(kClass: KClass<F>, builder: FactoryBuilder<F>): SystemBuilder {
+    fun <T : Any, P : ActorProxy<T>, F : ActorFactory<T, P>>
+            registerFactory(kClass: KClass<F>, builder: FactoryBuilder<F>): SystemBuilder {
         // Cannot add P : T because Java forbids it and Kotlin abides
         // https://stackoverflow.com/questions/43790137/why-cant-type-parameter-in-kotlin-have-any-other-bounds-if-its-bounded-by-anot
         factoryBuilderMap[kClass] = builder
@@ -43,7 +44,8 @@ class SystemBuilder {
     }
 
     /**
-     * Binds a property key to a value that can be used **during** the build process of [ActorSystem] through [PropertyGetter].
+     * Binds a property key to a value that can be used **during** the build process of [ActorSystem]
+     * through [PropertyGetter].
      *
      * These properties are built before everything else to provide dependencies for other components.
      * @param property The property key
@@ -64,7 +66,9 @@ class SystemBuilder {
 
         val coroutineScope = SystemScope(threadNumber)
         val factoryMap = mutableMapOf<KClass<out AnyActorFactory>, AnyActorFactory>()
-        val actorSystem = SystemImpl(ActorManagerImpl(FactoryRepositoryImpl(factoryMap), Serializer(), Deserializer(), coroutineScope))
+        val actorSystem = SystemImpl(
+                ActorManagerImpl(FactoryRepositoryImpl(factoryMap), Serializer(), Deserializer(), coroutineScope)
+        )
         var systemBuilt = false
 
         val buildProperties = buildProperties.mapValues { it.value(actorSystem) }

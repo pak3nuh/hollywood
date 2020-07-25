@@ -61,7 +61,8 @@ class SerializationBridgeBuilder(className: ClassName) {
                 .indent().apply {
                     bridgesToAdd.forEachIndexed { index, typeName ->
                         val comma = if (index == 0) "" else ","
-                        addStatement("%L %T(%T::class, %T.serializer())", comma, serializerDataClassName, typeName, typeName)
+                        addStatement("%L %T(%T::class, %T.serializer())",
+                                comma, serializerDataClassName, typeName, typeName)
                     }
                 }
                 .unindent()

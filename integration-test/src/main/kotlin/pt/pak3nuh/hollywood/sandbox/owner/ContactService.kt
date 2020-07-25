@@ -5,7 +5,8 @@ import pt.pak3nuh.hollywood.sandbox.clinic.ExamResult
 import pt.pak3nuh.hollywood.sandbox.clinic.OwnerContactResult
 
 /**
- * Service to contact clients. Will contain callback functions (because its a test), then it needs to be a service and not an actor.
+ * Service to contact clients. Will contain callback functions (because its a test), then it needs to be a service and
+ * not an actor.
  */
 class ContactService {
 

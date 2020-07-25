@@ -13,7 +13,8 @@ interface ActorManager {
      * @throws NoSuchElementException If the class was not registered.
      * @throws IllegalStateException If the actor created by the [creator] fails integrity checks.
      */
-    fun <T : Any, P : ActorProxy<T>, F : ActorFactory<T, P>> createActor(factoryClass: KClass<out F>, creator: (F) -> T): T
+    fun <T : Any, P : ActorProxy<T>, F : ActorFactory<T, P>>
+            createActor(factoryClass: KClass<out F>, creator: (F) -> T): T
 
     /**
      * Gets an actor by its id or creates a new one like [ActorManager.createActor].

@@ -25,12 +25,20 @@ class MetadataFunctionGenerator(
         private val typeChecker: TypeChecker
 ) : FunctionGenerator {
 
-    override fun buildFunctions(typeElement: TypeElement, functionBuildContext: FunctionBuildContext, context: GenerationContext): List<MethodResult> {
+    override fun buildFunctions(
+            typeElement: TypeElement,
+            functionBuildContext: FunctionBuildContext,
+            context: GenerationContext
+    ): List<MethodResult> {
         val classMetadata = requireNotNull(context[MetaClass]) { "Kotlin class metadata is required" }
         return buildFunctions(classMetadata, functionBuildContext, context.logger)
     }
 
-    private fun buildFunctions(metadata: MetaClass, functionContext: FunctionBuildContext, logger: Logger): List<MethodResult> {
+    private fun buildFunctions(
+            metadata: MetaClass,
+            functionContext: FunctionBuildContext,
+            logger: Logger
+    ): List<MethodResult> {
         logger.logDebug("Generating functions of class ${metadata.name}")
         return metadata.functions.map { buildFunction(it, functionContext.signatureType, logger) }
     }
@@ -72,7 +80,11 @@ class MetadataFunctionGenerator(
         return builder.build(metadata.name)
     }
 
-    private fun buildDelegateCall(parameterSpecs: List<MetaParameter>, funSignature: FunSignature, signaturesClassName: ClassName): CodeBlock {
+    private fun buildDelegateCall(
+            parameterSpecs: List<MetaParameter>,
+            funSignature: FunSignature,
+            signaturesClassName: ClassName
+    ): CodeBlock {
         val builder = CodeBlock.builder().add("return ")
 
         builder.beginControlFlow("sendAndAwait")

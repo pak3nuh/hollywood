@@ -100,7 +100,8 @@ class TypeUtilImpl(
         return typeConverter.convert(typeMirror)
     }
 
-    override fun getElementValuesWithDefaults(annotation: AnnotationMirror): Map<out ExecutableElement, AnnotationValue> {
+    override fun getElementValuesWithDefaults(annotation: AnnotationMirror)
+            : Map<out ExecutableElement, AnnotationValue> {
         return elements.getElementValuesWithDefaults(annotation)
     }
 

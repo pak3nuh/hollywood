@@ -1,9 +1,9 @@
 package pt.pak3nuh.hollywood.gradle
 
 object Versions {
-    const val kotlin = "1.3.72"
-    const val kotlinSerialization = "0.20.0"
-    const val coroutines = "1.3.5"
+    const val kotlin = "1.4.0"
+    const val kotlinSerialization = "1.0-M1-1.4.0-rc"
+    const val coroutines = "1.3.9"
     const val metadata = "0.1.0"
     const val junit = "5.6.0"
     const val kotlinPoet = "1.5.0"
@@ -12,6 +12,7 @@ object Versions {
     const val kryo = "5.0.0-RC5"
     const val sfl4j = "1.7.30"
     const val logback = "1.2.3"
+    const val detekt = "1.10.0"
 }
 
 object Dependencies {

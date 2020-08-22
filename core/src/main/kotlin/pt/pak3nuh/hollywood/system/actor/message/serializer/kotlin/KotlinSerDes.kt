@@ -59,7 +59,7 @@ internal class KotlinSerDes(private val serializerProviders: Set<SerializerProvi
                     logger.trace("Getting serializer for KClass {}", kClass)
                     val serializer: KSerializer<Any> = requireSerializer(kClass)
                     val reference = param.value?.let {
-                        KSerDesValue(kClass.java.name, Cbor.dump(serializer, it))
+                        KSerDesValue(kClass.java.name, Cbor.encodeToByteArray(serializer, it))
                     }
                     KSerDesParameter(Type.Ref, param.name, reference = reference)
                 }
@@ -75,7 +75,7 @@ internal class KotlinSerDes(private val serializerProviders: Set<SerializerProvi
 
         val kotlinMessage = KSerDesMessage(message.functionId, paramList)
         logger.debug("Writing to stream {}", kotlinMessage)
-        val serialized = Cbor.dump(KSerDesMessage.serializer(), kotlinMessage)
+        val serialized = Cbor.encodeToByteArray(KSerDesMessage.serializer(), kotlinMessage)
         stream.writeInt(serialized.size)
         stream.write(serialized)
         logger.debug("Message serialized")
@@ -100,14 +100,14 @@ internal class KotlinSerDes(private val serializerProviders: Set<SerializerProvi
                 val kValue = value?.let {
                     val kClass = value::class
                     val serializer = requireSerializer(kClass)
-                    KSerDesValue(kClass.java.name, Cbor.dump(serializer, it))
+                    KSerDesValue(kClass.java.name, Cbor.encodeToByteArray(serializer, it))
                 }
                 KSerDesResponse(kValue)
             }
         }
 
         logger.debug("Writing response to stream {}", kResponse)
-        val bytes = Cbor.dump(KSerDesResponse.serializer(), kResponse)
+        val bytes = Cbor.encodeToByteArray(KSerDesResponse.serializer(), kResponse)
         stream.writeInt(bytes.size)
         stream.write(bytes)
     }
@@ -147,7 +147,7 @@ internal class KotlinSerDes(private val serializerProviders: Set<SerializerProvi
         val buffer = ByteArray(size)
         stream.read(buffer)
         logger.trace("Loading message wrapper")
-        val kotlinMessage = Cbor.load(KSerDesMessage.serializer(), buffer)
+        val kotlinMessage = Cbor.decodeFromByteArray(KSerDesMessage.serializer(), buffer)
         logger.trace("Converting parameters")
         val params: List<Parameter> = kotlinMessage.parameters.map {
             logger.trace("Converting parameter {}", it)
@@ -163,7 +163,7 @@ internal class KotlinSerDes(private val serializerProviders: Set<SerializerProvi
                     it.reference?.let { ref ->
                         logger.debug("Loading parameter of type {}", ref.className)
                         val kClass = Class.forName(ref.className).kotlin
-                        val value = Cbor.load(requireSerializer(kClass), ref.bytes)
+                        val value = Cbor.decodeFromByteArray(requireSerializer(kClass), ref.bytes)
                         ReferenceParameter(it.name, kClass, value)
                     } ?: ReferenceParameter(it.name, null, null)
                 }
@@ -182,11 +182,11 @@ internal class KotlinSerDes(private val serializerProviders: Set<SerializerProvi
         val buffer = ByteArray(size)
         stream.read(buffer)
         logger.trace("Loading response wrapper")
-        val kotlinResponse = Cbor.load(KSerDesResponse.serializer(), buffer)
+        val kotlinResponse = Cbor.decodeFromByteArray(KSerDesResponse.serializer(), buffer)
         val value = kotlinResponse.value?.let {
             logger.debug("Loading response of type {}", it.className)
             val kClass = Class.forName(it.className).kotlin
-            Cbor.load(requireSerializer(kClass), it.bytes)
+            Cbor.decodeFromByteArray(requireSerializer(kClass), it.bytes)
         }
         logger.debug("Response loaded {}", value)
         return ValueResponse(value)

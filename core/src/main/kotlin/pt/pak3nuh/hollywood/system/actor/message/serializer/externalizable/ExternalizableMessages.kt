@@ -16,6 +16,7 @@ import pt.pak3nuh.hollywood.actor.message.ReferenceParameter
 import pt.pak3nuh.hollywood.actor.message.Response
 import pt.pak3nuh.hollywood.actor.message.ReturnType
 import pt.pak3nuh.hollywood.actor.message.ShortParameter
+import pt.pak3nuh.hollywood.actor.message.StackElement
 import pt.pak3nuh.hollywood.actor.message.UnitResponse
 import pt.pak3nuh.hollywood.actor.message.ValueResponse
 import pt.pak3nuh.hollywood.actor.message.ValueReturn
@@ -191,7 +192,7 @@ class ExternalizableResponse() : Externalizable {
                 val message: String? = input.readUTF().orNull()
                 val stackSize = input.readInt()
                 val stackTrace = (0 until stackSize).map {
-                    StackTraceElement(
+                    StackElement(
                             input.readUTF(), //className
                             input.readUTF(), //methodName
                             input.readUTF().orNull(), //fileName

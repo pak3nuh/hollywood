@@ -11,10 +11,12 @@ import pt.pak3nuh.hollywood.actor.message.ExceptionResponse
 import pt.pak3nuh.hollywood.actor.message.ExceptionReturn
 
 import pt.pak3nuh.hollywood.actor.message.ReturnType
+import pt.pak3nuh.hollywood.actor.message.StackElement
 import pt.pak3nuh.hollywood.actor.message.UnitResponse
 import pt.pak3nuh.hollywood.actor.message.UnitReturn
 import pt.pak3nuh.hollywood.actor.message.ValueResponse
 import pt.pak3nuh.hollywood.actor.message.ValueReturn
+import pt.pak3nuh.hollywood.actor.message.mapStackElement
 import pt.pak3nuh.hollywood.system.actor.message.MessageBuilderImpl
 import pt.pak3nuh.hollywood.system.actor.message.serializer.externalizable.ExternalizableSerDes
 import pt.pak3nuh.hollywood.system.actor.message.serializer.kotlin.KSerDesHolder
@@ -65,7 +67,7 @@ internal class LateBindStrategyTest {
         assertThat(response.returnValue).isInstanceOf(ExceptionReturn::class)
                 .all {
                     transform { it.message }.isEqualTo(exception.message)
-                    transform { it.stackTrace }.isEqualTo(exception.stackTrace?.toList())
+                    transform { it.stackTrace }.isEqualTo(exception.stackTrace?.map(::mapStackElement))
                 }
     }
 

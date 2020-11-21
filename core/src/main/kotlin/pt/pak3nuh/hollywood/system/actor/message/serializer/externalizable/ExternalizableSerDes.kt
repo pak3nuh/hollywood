@@ -21,6 +21,13 @@ import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
 import java.io.OutputStream
 
+/**
+ * Serdes for classes marked as [Externalizable].
+ *
+ * This is the only serializer that will process [ReturnType.UNIT] and [ReturnType.EXCEPTION]
+ * for efficiency reasons. Since the format is static, this serializer should be the one that produces
+ * less boilerplate.
+ */
 class ExternalizableSerDes : InternalSerDes {
 
     fun serialize(message: Message): ByteArray {
@@ -60,7 +67,7 @@ class ExternalizableSerDes : InternalSerDes {
     }
 
     override fun supports(response: Response): Boolean {
-        // only this serializer supports unit and return types because the format is static
+        // only this serializer supports unit and exception return types because the format is static
         return when (response.returnType) {
             ReturnType.UNIT, ReturnType.EXCEPTION -> true
             ReturnType.VALUE -> isValueExternalizable((response.returnValue as ValueReturn).value)

@@ -18,6 +18,7 @@ import pt.pak3nuh.hollywood.actor.message.ReferenceParameter
 import pt.pak3nuh.hollywood.actor.message.Response
 import pt.pak3nuh.hollywood.actor.message.ReturnType
 import pt.pak3nuh.hollywood.actor.message.ShortParameter
+import pt.pak3nuh.hollywood.actor.message.StackElement
 import pt.pak3nuh.hollywood.actor.message.UnitResponse
 import pt.pak3nuh.hollywood.actor.message.ValueResponse
 import pt.pak3nuh.hollywood.actor.message.ValueReturn
@@ -187,4 +188,11 @@ private class MsgParamsImpl(private val message: Message) : MsgParams {
 }
 
 class ProxyRequestException(message: String?) : RuntimeException(message)
-class ProxyResponseException(message: String?, stackTrace: List<StackTraceElement>?) : RuntimeException(message)
+class ProxyResponseException(
+        message: String?,
+        private val stackTrace: List<StackElement>?
+) : RuntimeException(message) {
+    override fun getStackTrace(): Array<StackTraceElement> {
+        return stackTrace?.map(StackElement::toJdkStackElement)?.toTypedArray() ?: emptyArray()
+    }
+}

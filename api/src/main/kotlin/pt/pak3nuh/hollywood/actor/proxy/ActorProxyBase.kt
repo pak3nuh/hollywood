@@ -2,7 +2,10 @@ package pt.pak3nuh.hollywood.actor.proxy
 
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import org.slf4j.LoggerFactory
 import pt.pak3nuh.hollywood.actor.message.BooleanParameter
 import pt.pak3nuh.hollywood.actor.message.ByteParameter
 import pt.pak3nuh.hollywood.actor.message.DoubleParameter
@@ -25,6 +28,8 @@ import pt.pak3nuh.hollywood.actor.message.ValueReturn
 import kotlin.coroutines.coroutineContext
 import kotlin.reflect.KClass
 
+private val logger = LoggerFactory.getLogger(ActorProxyBase::class.java)
+
 /**
  * Base class for generated actor proxies.
  *
@@ -36,6 +41,35 @@ abstract class ActorProxyBase<T>(override val delegate: T, private val configura
 
     private val serializer = configuration.serializer
     private val deserializer = configuration.deserializer
+
+    /*
+    * A future proof version of this actually requires fully decoupled communication.
+    * In the future, there would a system controlled communication mechanism that allows messages to be sent over
+    * the wire so that multi cluster implementations are possible.
+    * This new piece would track state of messages between system instances and provides an adaptation layer between
+    * suspending functions and networks calls.
+    *
+    * This means that proxies can be broken into send and receive and may simplify each implementation.
+    * */
+    private val channel = Channel<ActorMessage>(Channel.UNLIMITED)
+    private val actorLoop = configuration.scope.launch {
+        logger.info("Starting message loop on $actorId")
+        for (msg in channel) {
+            if (!isActive) {
+                logger.debug("Exiting actor loop due to cancellation on $actorId")
+                return@launch
+            }
+
+            val response = try {
+                onMessage(msg.request)
+            } catch (e: Exception) {
+                ExceptionResponse(e)
+            }
+
+            val asBytes = serializer.serialize(response)
+            msg.completionSignal.complete(asBytes)
+        }
+    }
 
     final override val actorId: String
         get() = configuration.actorId
@@ -55,17 +89,7 @@ abstract class ActorProxyBase<T>(override val delegate: T, private val configura
         val currentJob = requireNotNull(coroutineContext[Job])
         val result = CompletableDeferred<ByteArray>(parent = currentJob)
 
-        // simulated mailbox
-        // actual implementation should use the actorSystem to send and receive the results
-        configuration.scope.launch {
-            val response = try {
-                onMessage(packedMessage)
-            } catch (e: Exception) {
-                ExceptionResponse(e)
-            }
-            val asBytes = serializer.serialize(response)
-            result.complete(asBytes)
-        }
+        channel.send(ActorMessage(packedMessage, result))
 
         val responseBytes = result.await()
         return onResponse(responseBytes)
@@ -109,6 +133,7 @@ abstract class ActorProxyBase<T>(override val delegate: T, private val configura
     @Suppress("UNCHECKED_CAST")
     private fun <Y> cast(value: Any?): Y = value as Y
 
+    private class ActorMessage(val request: ByteArray, val completionSignal: CompletableDeferred<ByteArray>)
 }
 
 interface MessageHandler {

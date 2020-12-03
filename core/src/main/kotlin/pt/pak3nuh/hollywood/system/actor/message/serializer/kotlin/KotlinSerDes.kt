@@ -73,8 +73,8 @@ internal class KotlinSerDes(private val serializerProviders: Set<SerializerProvi
             }
         }
 
-        val kotlinMessage = KSerDesMessage(message.functionId, paramList)
-        logger.debug("Writing to stream {}", kotlinMessage)
+        val kotlinMessage = KSerDesMessage(message.functionId, paramList, message.trace)
+        logger.trace("Writing to stream {}", kotlinMessage)
         val serialized = Cbor.encodeToByteArray(KSerDesMessage.serializer(), kotlinMessage)
         stream.writeInt(serialized.size)
         stream.write(serialized)
@@ -170,7 +170,7 @@ internal class KotlinSerDes(private val serializerProviders: Set<SerializerProvi
             }
         }
         logger.debug("Message {} loaded with parameters {}", kotlinMessage.functionId, params)
-        return MessageImpl(kotlinMessage.functionId, params)
+        return MessageImpl(kotlinMessage.functionId, params, kotlinMessage.trace)
     }
 
     override fun deserializeResponse(stream: InputStream): Response =

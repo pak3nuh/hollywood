@@ -124,7 +124,7 @@ private class Configuration(
     override val actorId: String
         get() = internalActorId.fullActorId
 
-    override fun newMessageBuilder(): MessageBuilder = createMessageBuilder()
+    override fun newMessageBuilder(messageTrace: Set<String>): MessageBuilder = createMessageBuilder(messageTrace)
 }
 
 private inline class InternalActorId(val fullActorId: String) {

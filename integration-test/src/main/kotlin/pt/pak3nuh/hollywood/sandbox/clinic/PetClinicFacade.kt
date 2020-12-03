@@ -12,51 +12,38 @@ import pt.pak3nuh.hollywood.sandbox.pet.PetId
 import pt.pak3nuh.hollywood.sandbox.vet.Vet
 import pt.pak3nuh.hollywood.system.ActorSystem
 
-class PetClinicImpl(
+class PetClinicFacade(
         actorSystem: ActorSystem,
-        vets: List<Vet>,
         private val contactService: ContactService
-) : PetClinic {
+) {
 
     private val petClinicActor = actorSystem.getPetClinic()
-    private val logger = Loggers.getLogger<PetClinicImpl>()
-    override val actorScope = actorSystem.actorScope
+    private val logger = Loggers.getLogger<PetClinicFacade>()
+    val actorScope = actorSystem.actorScope
 
-    init {
-        vets.asSequence().map { vet ->
-            actorSystem.actorManager.getOrCreateActor(vet.name, VetFactory::class) {
-                logger.info("Creating vet ${vet.name}")
-                it.createVet()
-            }
-        }.forEach {
-            actorScope.launch {
-                logger.fine("Starting vet actor")
-                it.startWork()
-            }
-        }
+    suspend fun registerVet(vet: Vet) {
+        petClinicActor.registerVet(vet)
     }
 
-    override suspend fun checkinPet(pet: Pet, contacts: OwnerContacts) {
+    suspend fun checkinPet(pet: Pet, contacts: OwnerContacts) {
         contactService.registerContact(pet.petId.ownerId, contacts)
-        actorScope.launch {
-            petClinicActor.checkinPet(pet)
-        }
+        petClinicActor.checkinPet(pet)
     }
 
-    override suspend fun checkoutPet(petId: PetId, creditCard: CreditCard): Receipt {
+    suspend fun checkoutPet(petId: PetId, creditCard: CreditCard): Receipt {
         return petClinicActor.checkoutPet(petId, creditCard)
     }
 
-    override suspend fun seePet(petId: PetId, actions: (Pet) -> Unit) {
+    suspend fun seePet(petId: PetId, actions: (Pet) -> Unit) {
         val pet = petClinicActor.getPetToSee(petId)
         actions(pet)
     }
 
-    override suspend fun currentPets(): List<PetId> {
+    suspend fun currentPets(): List<PetId> {
         return petClinicActor.getPets()
     }
 
-    override suspend fun waitClosing() {
+    suspend fun waitClosing() {
         petClinicActor.waitClosing()
     }
 }

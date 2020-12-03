@@ -14,9 +14,9 @@ import pt.pak3nuh.hollywood.actor.message.ReferenceParameter
 import pt.pak3nuh.hollywood.actor.message.ShortParameter
 import kotlin.reflect.KClass
 
-fun createMessageBuilder(): MessageBuilder = MessageBuilderImpl()
+fun createMessageBuilder(trace: Set<String>): MessageBuilder = MessageBuilderImpl(trace)
 
-internal class MessageBuilderImpl : MessageBuilder {
+internal class MessageBuilderImpl(val trace: Set<String>) : MessageBuilder {
 
     private val parameterScope = Scope()
 
@@ -26,7 +26,7 @@ internal class MessageBuilderImpl : MessageBuilder {
     }
 
     override fun build(functionId: String): Message =
-            MessageImpl(functionId, parameterScope.parameterList)
+            MessageImpl(functionId, parameterScope.parameterList, trace)
 }
 
 private class Scope : ParameterScope {

@@ -20,6 +20,7 @@ import pt.pak3nuh.hollywood.actor.message.StackElement
 import pt.pak3nuh.hollywood.actor.message.UnitResponse
 import pt.pak3nuh.hollywood.actor.message.ValueResponse
 import pt.pak3nuh.hollywood.actor.message.ValueReturn
+import pt.pak3nuh.hollywood.system.actor.message.MessageImpl
 import pt.pak3nuh.hollywood.util.log.getLogger
 import java.io.Externalizable
 import java.io.ObjectInput
@@ -67,8 +68,13 @@ class ExternalizableMessage() : Externalizable {
             param
         }
 
-        data class MessageImpl(override val functionId: String, override val parameters: List<Parameter>) : Message
-        message = MessageImpl(functionId, paramList)
+        val traceSize = input.readInt()
+        logger.trace("Trace size: {}", traceSize)
+        val trace = (0 until traceSize).map {
+            input.readUTF()
+        }.toSet()
+
+        message = MessageImpl(functionId, paramList, trace)
         logger.debug("Finished reading message: {}", message)
     }
 
@@ -120,6 +126,10 @@ class ExternalizableMessage() : Externalizable {
                     }
                 }
             }
+        }
+        output.writeInt(message.trace.size)
+        message.trace.forEach {
+            output.writeUTF(it)
         }
     }
 

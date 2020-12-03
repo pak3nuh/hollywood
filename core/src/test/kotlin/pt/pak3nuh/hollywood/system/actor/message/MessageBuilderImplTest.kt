@@ -17,7 +17,7 @@ import pt.pak3nuh.hollywood.actor.message.ShortParameter
 
 internal class MessageBuilderImplTest {
 
-    private val builder = MessageBuilderImpl()
+    private val builder = MessageBuilderImpl(emptySet())
 
     @Test
     internal fun `should create messages with empty parameters`() {

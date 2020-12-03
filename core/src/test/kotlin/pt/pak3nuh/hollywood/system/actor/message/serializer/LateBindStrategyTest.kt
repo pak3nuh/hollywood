@@ -11,7 +11,6 @@ import pt.pak3nuh.hollywood.actor.message.ExceptionResponse
 import pt.pak3nuh.hollywood.actor.message.ExceptionReturn
 
 import pt.pak3nuh.hollywood.actor.message.ReturnType
-import pt.pak3nuh.hollywood.actor.message.StackElement
 import pt.pak3nuh.hollywood.actor.message.UnitResponse
 import pt.pak3nuh.hollywood.actor.message.UnitReturn
 import pt.pak3nuh.hollywood.actor.message.ValueResponse
@@ -28,7 +27,7 @@ import java.time.Instant
 internal class LateBindStrategyTest {
 
     private val strategy = LateBindStrategy(DefaultSerializer(), ExternalizableSerDes(), KotlinSerDes(setOf(TestKSerDesProvider())))
-    private val messageBuilder = MessageBuilderImpl()
+    private val messageBuilder = MessageBuilderImpl(emptySet())
 
     @Test
     fun unitResponse() {

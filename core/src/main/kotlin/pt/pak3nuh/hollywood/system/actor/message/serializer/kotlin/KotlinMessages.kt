@@ -3,7 +3,11 @@ package pt.pak3nuh.hollywood.system.actor.message.serializer.kotlin
 import kotlinx.serialization.Serializable
 
 @Serializable
-internal data class KSerDesMessage(val functionId: String, val parameters: List<KSerDesParameter>)
+internal data class KSerDesMessage(
+        val functionId: String,
+        val parameters: List<KSerDesParameter>,
+        val trace: Set<String>
+)
 
 @Serializable
 internal data class KSerDesParameter(

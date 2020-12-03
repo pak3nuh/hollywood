@@ -10,7 +10,16 @@ interface Message {
      * Unique identifier for a function within an actor interface.
      */
     val functionId: String
+
+    /**
+     * Set of parameters that compose the message
+     */
     val parameters: List<Parameter>
+
+    /**
+     * The trace contains the set of identifiers that a message went through
+     */
+    val trace: Set<String>
 }
 
 /**

@@ -21,7 +21,7 @@ private class PetActorImpl(private val pet: Pet, private val actors: ClinicActor
     override suspend fun applyTreatment(treatment: Treatment) {
         logger.info("Applying treatment $petName")
         pet.applyTreatment(treatment)
-        logger.fine("$petName is ready")
+        logger.debug("$petName is ready")
         actors.getClinic().petReady(pet)
     }
 }

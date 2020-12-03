@@ -121,7 +121,8 @@ internal class DefaultSerializer: InternalSerDes {
 
 internal data class InternalMessage constructor(
         override val functionId: String,
-        override val parameters: ArrayList<Parameter>
+        override val parameters: ArrayList<Parameter>,
+        override val trace: Set<String>
 ) : Message {
     companion object {
         fun from(message: Message): InternalMessage {
@@ -129,7 +130,7 @@ internal data class InternalMessage constructor(
                 if (it is ReferenceParameter) ReferenceParameter(it.name, it.value, null)
                 else it
             }
-            return InternalMessage(message.functionId, noMetadataParameters)
+            return InternalMessage(message.functionId, noMetadataParameters, message.trace)
         }
     }
 }

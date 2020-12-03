@@ -10,6 +10,7 @@ dependencies {
     implementation(project(":api"))
     implementation(Dependencies.kotlinCoroutines)
     implementation(Dependencies.kotlinSerializationRuntime)
+    implementation(Dependencies.sfl4j)
 
     testImplementation(Dependencies.logback)
     testImplementation(project(":builder"))

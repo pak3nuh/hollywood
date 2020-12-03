@@ -2,7 +2,9 @@ package pt.pak3nuh.hollywood.sandbox.actor
 
 import kotlinx.coroutines.CompletableJob
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import pt.pak3nuh.hollywood.actor.proxy.ActorProxyBase
+import pt.pak3nuh.hollywood.actor.proxy.ActorScope
 import pt.pak3nuh.hollywood.actor.proxy.ProxyConfiguration
 import pt.pak3nuh.hollywood.processor.Actor
 import pt.pak3nuh.hollywood.sandbox.Loggers
@@ -22,6 +24,7 @@ abstract class CustomProxy<T>(delegate: T, config: ProxyConfiguration) : ActorPr
 
 @Actor(CustomProxy::class)
 interface ClinicActor {
+    suspend fun registerVet(vet: Vet)
     suspend fun checkinPet(pet: Pet)
     suspend fun checkoutPet(petId: PetId, creditCard: CreditCard): Receipt
     suspend fun petReady(pet: Pet)
@@ -36,22 +39,25 @@ interface ClinicActor {
 }
 
 class ClinicFactory(
-        private val vets: List<Vet>,
         private val actors: ClinicActors,
-        val parentJob: Job
+        private val scope: ActorScope
 ) : ClinicActorBaseFactory {
-    fun createClinic(): ClinicActor = ClinicActorImpl(vets, actors, parentJob)
+    fun createClinic(): ClinicActor = ClinicActorImpl(actors, scope)
 }
 
 internal class ClinicActorImpl(
-        private val vets: List<Vet>,
         private val actors: ClinicActors,
-        parentJob: Job
+        private val scope: ActorScope
 ) : ClinicActor {
 
+    private val vets = mutableListOf<Vet>()
     private val pets = mutableMapOf<String, PetInObservation>()
-    private val job: CompletableJob = Job(parentJob)
+    private val job: CompletableJob = Job(scope.mainJob)
     private val logger = Loggers.getLogger<ClinicActorImpl>()
+
+    override suspend fun registerVet(vet: Vet) {
+        vets.add(vet)
+    }
 
     override suspend fun checkinPet(pet: Pet) {
         val firstAvailableVet = vets.firstOrNull {
@@ -80,13 +86,13 @@ internal class ClinicActorImpl(
         if (petInObservation.state != PetInObservation.State.READY) {
             throw PetClinicException("Pet not ready")
         }
-        logger.fine("Issuing receipt")
+        logger.debug("Issuing receipt")
         val receipt = issueReceipt(creditCard, petInObservation)
         pets.remove(petId.registryId)
         if (pets.isEmpty()) {
             job.complete()
         }
-        logger.fine("Pet checked out")
+        logger.debug("Pet checked out")
         return receipt
     }
 

@@ -35,7 +35,7 @@ interface ProxyConfiguration {
     val serializer: Serializer
     val deserializer: Deserializer
     val scope: ActorScope
-    fun newMessageBuilder(): MessageBuilder
+    fun newMessageBuilder(messageTrace: Set<String>): MessageBuilder
 }
 
 interface ActorScope: CoroutineScope {

@@ -52,11 +52,11 @@ abstract class ActorProxyBase<T>(override val delegate: T, private val configura
     * This means that proxies can be broken into send and receive and may simplify each implementation.
     * */
     private val channel = Channel<ActorMessage>(Channel.UNLIMITED)
-    private val actorLoop = configuration.scope.launch {
-        logger.info("Starting message loop on $actorId")
+    private val actorLoop = configuration.scope.launch(MdcContext(actorId)) {
+        logger.info("Starting message loop")
         for (msg in channel) {
             if (!isActive) {
-                logger.debug("Exiting actor loop due to cancellation on $actorId")
+                logger.debug("Exiting actor loop due to cancellation")
                 return@launch
             }
 
@@ -71,13 +71,18 @@ abstract class ActorProxyBase<T>(override val delegate: T, private val configura
         }
     }
 
+    private val deadlockDetector = StatefulDeadlockDetector(actorId)
+
     final override val actorId: String
         get() = configuration.actorId
 
     protected abstract val handlerMap: Map<String, MessageHandler>
 
     protected open suspend fun <T> sendAndAwait(block: MessageBuilder.() -> Message): T {
-        return dispatchAndAwait(block(configuration.newMessageBuilder()))
+        return deadlockDetector.onSendMessage { trace ->
+            val builder = configuration.newMessageBuilder(trace)
+            dispatchAndAwait(block(builder))
+        }
     }
 
     private suspend fun <T> dispatchAndAwait(message: Message): T {
@@ -89,6 +94,7 @@ abstract class ActorProxyBase<T>(override val delegate: T, private val configura
         val currentJob = requireNotNull(coroutineContext[Job])
         val result = CompletableDeferred<ByteArray>(parent = currentJob)
 
+        logger.debug("Sending message {}", message.functionId)
         channel.send(ActorMessage(packedMessage, result))
 
         val responseBytes = result.await()
@@ -113,8 +119,10 @@ abstract class ActorProxyBase<T>(override val delegate: T, private val configura
 
     protected open suspend fun onMessage(packedMessage: ByteArray): Response {
         val message = deserializer.asMessage(packedMessage)
-        val params = MsgParamsImpl(message)
-        return onMessage(message.functionId, params, this::raiseError)
+        return deadlockDetector.onReceiveMessage(message) {
+            val params = MsgParamsImpl(message)
+            onMessage(message.functionId, params, this@ActorProxyBase::raiseError)
+        }
     }
 
     private suspend fun onMessage(functionId: String, params: MsgParams, err: (String) -> Nothing): Response {
@@ -146,7 +154,7 @@ class HandlerBuilder {
     private val handlerList = mutableListOf<MessageHandler>()
 
     fun <T> valueFunction(functionId: String, handler: suspend (MsgParams) -> T): HandlerBuilder {
-        val handlerDecorator = Handler(functionId) {
+        val handlerDecorator = HandlerData(functionId) {
             ValueResponse(handler(it))
         }
         handlerList.add(handlerDecorator)
@@ -154,7 +162,7 @@ class HandlerBuilder {
     }
 
     fun unitFunction(functionId: String, handler: suspend (MsgParams) -> Unit): HandlerBuilder {
-        val handlerDecorator = Handler(functionId) {
+        val handlerDecorator = HandlerData(functionId) {
             handler(it)
             UnitResponse()
         }
@@ -166,7 +174,7 @@ class HandlerBuilder {
         return handlerList.associateBy(MessageHandler::functionId)
     }
 
-    private data class Handler(
+    private data class HandlerData(
             override val functionId: String,
             override val handler: suspend (MsgParams) -> Response
     ) : MessageHandler

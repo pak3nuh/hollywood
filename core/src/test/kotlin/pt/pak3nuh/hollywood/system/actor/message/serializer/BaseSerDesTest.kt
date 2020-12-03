@@ -23,7 +23,7 @@ internal abstract class BaseSerDesTest {
     protected abstract val supportsUnitResponse: Boolean
     protected abstract val supportsExceptionResponse: Boolean
     protected abstract val serdes: InternalSerDes
-    protected val messageBuilder = MessageBuilderImpl()
+    protected val messageBuilder = MessageBuilderImpl(emptySet())
 
     @Test
     internal fun `should serde messages with only primitives`() {

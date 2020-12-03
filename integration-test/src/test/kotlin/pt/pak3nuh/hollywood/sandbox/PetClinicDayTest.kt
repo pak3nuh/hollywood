@@ -2,30 +2,31 @@ package pt.pak3nuh.hollywood.sandbox
 
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import pt.pak3nuh.hollywood.sandbox.clinic.OwnerContactResult
-import pt.pak3nuh.hollywood.sandbox.clinic.PetClinic
+import pt.pak3nuh.hollywood.sandbox.clinic.PetClinicFacade
 import pt.pak3nuh.hollywood.sandbox.owner.CreditCard
 import pt.pak3nuh.hollywood.sandbox.owner.OwnerContacts
 import pt.pak3nuh.hollywood.sandbox.owner.OwnerId
 import pt.pak3nuh.hollywood.sandbox.pet.Pet
 import pt.pak3nuh.hollywood.sandbox.pet.PetId
+import pt.pak3nuh.hollywood.sandbox.vet.Vet
 
 class PetClinicDayTest {
 
-    @Disabled // test doesn't complete because actors are deadlocked, need to make a propper test
+    //    @Disabled // test doesn't complete because actors are deadlocked, need to make a propper test
     @Test
     fun petClinicDay() {
         val petClinic = createClinic()
         runBlocking(context = petClinic.actorScope.coroutineContext) {
+            petClinic.registerVet(Vet("samir abdul"))
             startDay(petClinic)
             petClinic.waitClosing()
             assertTrue(petClinic.currentPets().isEmpty())
         }
     }
 
-    private suspend fun startDay(petClinic: PetClinic) {
+    private suspend fun startDay(petClinic: PetClinicFacade) {
         val johnId = OwnerId("123", "John")
         val mrBoots = Pet(
                 PetId("12345678", "Mr Boots", johnId, "2014-01-06"),
